@@ -1,0 +1,26 @@
+repos:
+  - repo: local
+    hooks:
+      - id: go-fmt
+        name: go-fmt
+        entry: sh -c 'go fmt ./...'
+        language: system
+        types: [go]
+
+      - id: goimports
+        name: goimports
+        entry: sh -c 'find . -name "*.go" -exec goimports -local go-echo-template/ -w {} +'
+        language: system
+        types: [go]
+
+      - id: golines
+        name: golines
+        entry: sh -c 'find . -name "*.go" -exec golines -w {} -m 120 \;'
+        language: system
+        types: [go]
+
+      - id: golangci-lint
+        name: golangci-lint
+        entry: sh -c 'golangci-lint run ./...'
+        language: system
+        types: [go]

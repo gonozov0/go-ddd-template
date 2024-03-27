@@ -1,0 +1,62 @@
+name: Lint and Test
+
+on:
+  push:
+    branches: [ main ]
+    tags-ignore: ['*']
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint_and_test:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: 1.22.1
+
+    - name: Install dependencies
+      run: |
+        go install golang.org/x/tools/cmd/goimports@latest
+        go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+        go install github.com/segmentio/golines@latest
+
+    - name: Lint code
+      run: |
+        unformatted=$(go fmt ./...)
+        if [ -n "$unformatted" ]; then 
+          echo "These files are not formatted with 'go fmt': $unformatted"
+          exit 1
+        fi
+        unformatted=$(find . -name '*.go' -exec goimports -local go-echo-template/ -l {} +)
+        if [ -n "$unformatted" ]; then
+          echo "These files are not formatted with 'goimports': $unformatted"
+          exit 1
+        fi
+        unformatted=$(find . -name '*.go' -exec golines -w {} -m 120 \;)
+        if [ -n "$unformatted" ]; then
+          echo "These files are not formatted with 'golines': $unformatted"
+          exit 1
+        fi
+        golangci-lint run ./...
+
+    - name: Run tests
+      run: go test -coverpkg=./... -count=1 -coverprofile=coverage.out ./...
+      env:
+        REDIS_ADDRESS: localhost:6379
+
+    - name: Upload coverage to GitHub Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage
+        path: coverage.out
