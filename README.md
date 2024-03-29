@@ -1,6 +1,7 @@
 # go-echo-ddd-template
 
-The project is a template for Go repositories using the Echo framework and DDD architecture.
+The project is a template for Go repositories using the Echo framework.
+Contains examples of the code structure for a project with a domain-driven design (DDD) approach.
 
 
 ## Настойка dev окружения
