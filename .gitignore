@@ -27,3 +27,5 @@ go.work
 
 bin/*
 !bin/.gitkeep
+
+.DS_Store
