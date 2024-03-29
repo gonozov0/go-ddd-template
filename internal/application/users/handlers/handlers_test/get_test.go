@@ -5,18 +5,18 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"go-echo-template/internal/application/users/handlers"
-	"go-echo-template/internal/domain/users"
+	"go-echo-ddd-template/internal/application/users/handlers"
+	"go-echo-ddd-template/internal/domain/users"
 
 	"github.com/google/uuid"
 )
 
 func (s *UsersSuite) TestGetUser() {
-	user, _ := users.NewUser("test", "test@test.com")
-	err := s.repo.SaveUser(user)
+	user, _ := users.CreateUser("test", "test@test.com")
+	err := s.repo.SaveUser(*user)
 	s.Require().NoError(err)
 
-	req := httptest.NewRequest(http.MethodGet, "/users/"+user.GetID().String(), nil)
+	req := httptest.NewRequest(http.MethodGet, "/users/"+user.ID().String(), nil)
 	rec := httptest.NewRecorder()
 	s.e.ServeHTTP(rec, req)
 
@@ -25,9 +25,9 @@ func (s *UsersSuite) TestGetUser() {
 	err = json.Unmarshal(rec.Body.Bytes(), &resp)
 	s.Require().NoError(err)
 	s.Require().Equal(handlers.GetResponse{
-		ID:    user.GetID().String(),
-		Name:  user.GetName(),
-		Email: user.GetEmail(),
+		ID:    user.ID().String(),
+		Name:  user.Name(),
+		Email: user.Email(),
 	}, resp)
 }
 

@@ -3,9 +3,9 @@ package handlers_test
 import (
 	"testing"
 
-	"go-echo-template/internal/application/users"
-	"go-echo-template/internal/application/users/handlers"
-	infra "go-echo-template/internal/infrastructure/users"
+	"go-echo-ddd-template/internal/application/users"
+	"go-echo-ddd-template/internal/application/users/handlers"
+	infra "go-echo-ddd-template/internal/infrastructure/users"
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"

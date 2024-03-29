@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"go-echo-template/internal/application/users/handlers"
+	"go-echo-ddd-template/internal/application/users/handlers"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"

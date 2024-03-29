@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"go-echo-template/internal/domain/users"
+	"go-echo-ddd-template/internal/domain/users"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -32,8 +32,8 @@ func (h *Handler) GetUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, GetResponse{
-		ID:    user.GetID().String(),
-		Name:  user.GetName(),
-		Email: user.GetEmail(),
+		ID:    user.ID().String(),
+		Name:  user.Name(),
+		Email: user.Email(),
 	})
 }

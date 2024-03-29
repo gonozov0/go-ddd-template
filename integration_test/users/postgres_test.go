@@ -3,7 +3,7 @@ package users_test
 import (
 	"testing"
 
-	"go-echo-template/internal/infrastructure/users"
+	"go-echo-ddd-template/internal/infrastructure/users"
 
 	"github.com/stretchr/testify/suite"
 )

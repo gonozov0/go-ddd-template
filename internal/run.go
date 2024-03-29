@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"go-echo-template/pkg/logger"
-	"go-echo-template/pkg/sentry"
+	"go-echo-ddd-template/pkg/logger"
+	"go-echo-ddd-template/pkg/sentry"
 
 	"golang.org/x/sync/errgroup"
 )

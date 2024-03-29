@@ -4,9 +4,12 @@ import (
 	"log/slog"
 	"net/http"
 
-	"go-echo-template/internal/application/users"
-	usersInfra "go-echo-template/internal/infrastructure/users"
-	"go-echo-template/pkg/echomiddleware"
+	"go-echo-ddd-template/internal/application/orders"
+	"go-echo-ddd-template/internal/application/users"
+	ordersInfra "go-echo-ddd-template/internal/infrastructure/orders"
+	productsInfra "go-echo-ddd-template/internal/infrastructure/products"
+	usersInfra "go-echo-ddd-template/internal/infrastructure/users"
+	"go-echo-ddd-template/pkg/echomiddleware"
 
 	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"
@@ -27,8 +30,12 @@ func newServer(_ Config) *echo.Echo {
 		return c.String(http.StatusOK, "pong")
 	})
 
-	usersRepo := usersInfra.NewPostgresRepo()
-	users.Setup(e, usersRepo)
+	userRepo := usersInfra.NewPostgresRepo()
+	users.Setup(e, userRepo)
+
+	productRepo := productsInfra.NewPostgresRepo()
+	orderRepo := ordersInfra.NewPostgresRepo()
+	orders.Setup(e, orderRepo, userRepo, productRepo)
 
 	return e
 }

@@ -16,7 +16,7 @@ test: unit_test integration_test e2e_test
 
 lint:
 	go fmt ./...
-	find . -name '*.go' -exec goimports -local go-echo-template/ -w {} +
+	find . -name '*.go' -exec goimports -local go-echo-ddd-template/ -w {} +
 	find . -name '*.go' -exec golines -w {} -m 120 \;
 	golangci-lint run ./...
 

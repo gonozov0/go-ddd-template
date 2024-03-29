@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-echo-template/internal"
+	"go-echo-ddd-template/internal"
 )
 
 func main() {

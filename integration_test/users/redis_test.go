@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"go-echo-template/internal"
-	"go-echo-template/internal/domain/users"
-	usersInfra "go-echo-template/internal/infrastructure/users"
+	"go-echo-ddd-template/internal"
+	"go-echo-ddd-template/internal/domain/users"
+	usersInfra "go-echo-ddd-template/internal/infrastructure/users"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -48,10 +48,10 @@ func (suite *RedisRepoSuite) TestSaveUser() {
 	key := uuid.New()
 	suite.keysToDelete = append(suite.keysToDelete, key)
 
-	user, err := users.NewUserWithID(key, "test", "test@test.com")
+	user, err := users.NewUser(key, "test", "test@test.com")
 	suite.Require().NoError(err)
 
-	err = suite.repo.SaveUser(suite.ctx, user)
+	err = suite.repo.SaveUser(suite.ctx, *user)
 	suite.Require().NoError(err)
 }
 
@@ -59,10 +59,10 @@ func (suite *RedisRepoSuite) TestGetUser() {
 	key := uuid.New()
 	suite.keysToDelete = append(suite.keysToDelete, key)
 
-	user, err := users.NewUserWithID(key, "test", "test@test.com")
+	user, err := users.NewUser(key, "test", "test@test.com")
 	suite.Require().NoError(err)
 
-	err = suite.repo.SaveUser(suite.ctx, user)
+	err = suite.repo.SaveUser(suite.ctx, *user)
 	suite.Require().NoError(err)
 
 	u, err := suite.repo.GetUser(suite.ctx, key)

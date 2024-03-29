@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	"go-echo-template/internal/domain/users"
+	"go-echo-ddd-template/internal/domain/users"
 
 	"github.com/labstack/echo/v4"
 )
@@ -25,7 +25,7 @@ func (h *Handler) CreateUser(c echo.Context) error {
 		return err
 	}
 
-	user, err := users.NewUser(data.Name, data.Email)
+	user, err := users.CreateUser(data.Name, data.Email)
 	if err != nil {
 		if errors.Is(err, users.ErrInvalidUser) || errors.Is(err, users.ErrUserValidation) {
 			return c.JSON(http.StatusBadRequest, echo.Map{"message": err.Error()})
@@ -33,9 +33,9 @@ func (h *Handler) CreateUser(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"message": err.Error()})
 	}
 
-	if err := h.repo.SaveUser(user); err != nil {
+	if err := h.repo.SaveUser(*user); err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"message": err.Error()})
 	}
 
-	return c.JSON(http.StatusCreated, CreateResponse{ID: user.GetID().String()})
+	return c.JSON(http.StatusCreated, CreateResponse{ID: user.ID().String()})
 }

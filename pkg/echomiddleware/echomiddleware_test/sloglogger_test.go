@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"go-echo-template/pkg/echomiddleware"
+	"go-echo-ddd-template/pkg/echomiddleware"
 )
 
 type MockLogger struct {

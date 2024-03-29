@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"go-echo-template/pkg/contextkeys"
+	"go-echo-ddd-template/pkg/contextkeys"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

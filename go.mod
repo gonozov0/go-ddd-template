@@ -1,4 +1,4 @@
-module go-echo-template
+module go-echo-ddd-template
 
 go 1.22
 

@@ -1,3 +1,5 @@
+// Description: The file contains just the example of the Redis repository implementation and isn't used in the project.
+
 package users
 
 import (
@@ -11,7 +13,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 
-	"go-echo-template/internal/domain/users"
+	"go-echo-ddd-template/internal/domain/users"
 )
 
 type redisUser struct {
@@ -37,7 +39,7 @@ func NewRedisRepo(clusterMode, tlsEnabled bool, addr, username, password string,
 	)
 	if tlsEnabled {
 		tlsConfig = &tls.Config{
-			InsecureSkipVerify: true, //nolint:gosec // It's okay in intranet and working for our AWS Redis cluster
+			InsecureSkipVerify: true, //nolint:gosec // It's okay in intranet
 		}
 	}
 
@@ -63,17 +65,17 @@ func NewRedisRepo(clusterMode, tlsEnabled bool, addr, username, password string,
 	}
 }
 
-func (r *RedisRepo) SaveUser(ctx context.Context, user *users.User) error {
+func (r *RedisRepo) SaveUser(ctx context.Context, user users.User) error {
 	ru := redisUser{
-		Name:  user.GetName(),
-		Email: user.GetEmail(),
+		Name:  user.Name(),
+		Email: user.Email(),
 	}
 	val, err := json.Marshal(ru)
 	if err != nil {
 		return fmt.Errorf("failed to serialize user: %w", err)
 	}
 
-	err = r.client.Set(ctx, user.GetID().String(), val, r.expiration).Err()
+	err = r.client.Set(ctx, user.ID().String(), val, r.expiration).Err()
 	if err != nil {
 		return fmt.Errorf("failed to save user to redis: %w", err)
 	}
@@ -95,7 +97,7 @@ func (r *RedisRepo) GetUser(ctx context.Context, id uuid.UUID) (*users.User, err
 		return nil, fmt.Errorf("failed to deserialize user: %w", err)
 	}
 
-	return users.NewUserWithID(id, ru.Name, ru.Email)
+	return users.NewUser(id, ru.Name, ru.Email)
 }
 
 func (r *RedisRepo) DeleteUser(ctx context.Context, id uuid.UUID) error {

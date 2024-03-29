@@ -1,9 +1,9 @@
-package users
+package orders
 
 import (
 	"errors"
 
-	"go-echo-ddd-template/internal/domain/users"
+	"go-echo-ddd-template/internal/domain/orders"
 
 	"github.com/google/uuid"
 )
@@ -15,10 +15,10 @@ func NewPostgresRepo() *PostgresRepo {
 	return &PostgresRepo{}
 }
 
-func (r *PostgresRepo) SaveUser(_ users.User) error {
+func (r *PostgresRepo) SaveOrder(_ orders.Order) error {
 	return errors.New("not implemented")
 }
 
-func (r *PostgresRepo) GetUser(_ uuid.UUID) (*users.User, error) {
+func (r *PostgresRepo) GetOrder(_ uuid.UUID) (*orders.Order, error) {
 	return nil, errors.New("not implemented")
 }

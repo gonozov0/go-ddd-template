@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"go-echo-template/internal/domain/users"
+	"go-echo-ddd-template/internal/domain/users"
 
 	"github.com/google/uuid"
 )
 
 type Repository interface {
-	SaveUser(u *users.User) error
+	SaveUser(u users.User) error
 	GetUser(id uuid.UUID) (*users.User, error)
 }
 

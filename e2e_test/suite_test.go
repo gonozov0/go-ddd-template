@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"go-echo-template/internal"
+	"go-echo-ddd-template/internal"
 
 	"github.com/stretchr/testify/suite"
 )

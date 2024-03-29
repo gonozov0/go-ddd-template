@@ -38,7 +38,7 @@ jobs:
           echo "These files are not formatted with 'go fmt': $unformatted"
           exit 1
         fi
-        unformatted=$(find . -name '*.go' -exec goimports -local go-echo-template/ -l {} +)
+        unformatted=$(find . -name '*.go' -exec goimports -local go-echo-ddd-template/ -l {} +)
         if [ -n "$unformatted" ]; then
           echo "These files are not formatted with 'goimports': $unformatted"
           exit 1

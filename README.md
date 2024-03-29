@@ -1,6 +1,6 @@
-# go-echo-template
+# go-echo-ddd-template
 
-The project is a template for a Go repositories using the Echo framework.
+The project is a template for Go repositories using the Echo framework and DDD architecture.
 
 
 ## Настойка dev окружения

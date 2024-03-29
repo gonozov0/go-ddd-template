@@ -9,7 +9,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 
-	"go-echo-template/pkg/contextkeys"
+	"go-echo-ddd-template/pkg/contextkeys"
 )
 
 func Setup() {
