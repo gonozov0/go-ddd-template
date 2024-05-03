@@ -12,16 +12,12 @@ var (
 )
 
 type Item struct {
-	id       uuid.UUID
-	name     string
-	price    float64
-	quantity int
+	id    uuid.UUID
+	name  string
+	price float64
 }
 
-func NewItem(id uuid.UUID, name string, price float64, quantity int) (*Item, error) {
-	if quantity <= 0 {
-		return nil, fmt.Errorf("%w: invalid quantity: %d", ErrInvalidItem, quantity)
-	}
+func NewItem(id uuid.UUID, name string, price float64) (*Item, error) {
 	if name == "" {
 		return nil, fmt.Errorf("%w: invalid name", ErrInvalidItem)
 	}
@@ -30,10 +26,9 @@ func NewItem(id uuid.UUID, name string, price float64, quantity int) (*Item, err
 	}
 
 	return &Item{
-		id:       id,
-		name:     name,
-		price:    price,
-		quantity: quantity,
+		id:    id,
+		name:  name,
+		price: price,
 	}, nil
 }
 
@@ -47,8 +42,4 @@ func (i *Item) Name() string {
 
 func (i *Item) Price() float64 {
 	return i.price
-}
-
-func (i *Item) Quantity() int {
-	return i.quantity
 }

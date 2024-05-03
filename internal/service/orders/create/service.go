@@ -1,4 +1,4 @@
-package orders
+package create
 
 import (
 	"go-echo-ddd-template/internal/domain/orders"
@@ -20,16 +20,17 @@ type userRepo interface {
 type productRepo interface {
 	GetProductsForUpdate(ids []uuid.UUID) ([]products.Product, error)
 	SaveProducts(ps []products.Product) error
+	CancelUpdate()
 }
 
-type OrderService struct {
+type OrderCreationService struct {
 	orderRepo   orderRepo
 	userRepo    userRepo
 	productRepo productRepo
 }
 
-func NewOrderService(or orderRepo, ur userRepo, pr productRepo) *OrderService {
-	return &OrderService{
+func NewOrderCreationService(or orderRepo, ur userRepo, pr productRepo) *OrderCreationService {
+	return &OrderCreationService{
 		orderRepo:   or,
 		userRepo:    ur,
 		productRepo: pr,

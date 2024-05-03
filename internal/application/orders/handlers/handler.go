@@ -20,6 +20,7 @@ type UserRepository interface {
 type ProductRepository interface {
 	GetProductsForUpdate(ids []uuid.UUID) ([]products.Product, error)
 	SaveProducts(ps []products.Product) error
+	CancelUpdate()
 }
 
 type Handler struct {

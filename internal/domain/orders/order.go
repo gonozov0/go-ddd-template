@@ -49,18 +49,7 @@ func (o *Order) Items() []Item {
 func (o *Order) Price() float64 {
 	var total float64
 	for _, item := range o.items {
-		total += item.Price() * float64(item.Quantity())
+		total += item.Price()
 	}
 	return total
-}
-
-func (o *Order) Pay() error {
-	return errors.New("not implemented")
-}
-
-func (o *Order) MakeInvoice() (string, error) {
-	if o.status != OrderStatusPaid {
-		return "", errors.New("order is not paid")
-	}
-	return "", errors.New("not implemented")
 }

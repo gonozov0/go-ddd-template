@@ -1,6 +1,7 @@
 package products
 
 import (
+	"fmt"
 	"sync"
 
 	"go-echo-ddd-template/internal/domain/products"
@@ -9,15 +10,14 @@ import (
 )
 
 type product struct {
-	Name     string
-	Price    float64
-	Category string
-	Quantity int
+	Name      string
+	Price     float64
+	Available bool
 }
 
 type InMemoryRepo struct {
 	products map[uuid.UUID]product
-	mu       sync.RWMutex
+	tx       sync.Mutex
 }
 
 func NewInMemoryRepo() *InMemoryRepo {
@@ -26,67 +26,38 @@ func NewInMemoryRepo() *InMemoryRepo {
 	}
 }
 
-func (r *InMemoryRepo) SaveProduct(p products.Product) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	// TODO: check mutex for each product to simulate transaction with blocking raws
-	r.products[p.ID()] = product{
-		Name:     p.Name(),
-		Price:    p.Price(),
-		Category: p.Category(),
-		Quantity: p.Quantity(),
-	}
-	return nil
-}
-
 func (r *InMemoryRepo) SaveProducts(ps []products.Product) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	defer r.tx.Unlock()
 
-	// TODO: check mutex for each product to simulate transaction with blocking raws
 	for _, p := range ps {
 		r.products[p.ID()] = product{
-			Name:     p.Name(),
-			Price:    p.Price(),
-			Category: p.Category(),
-			Quantity: p.Quantity(),
+			Name:      p.Name(),
+			Price:     p.Price(),
+			Available: p.Available(),
 		}
 	}
 	return nil
 }
 
-func (r *InMemoryRepo) GetProduct(id uuid.UUID) (*products.Product, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	p, ok := r.products[id]
-	if !ok {
-		return nil, products.ErrProductNotFound
-	}
-	product, err := products.NewProduct(id, p.Name, p.Price, p.Category, p.Quantity)
-	if err != nil {
-		return nil, err
-	}
-	return product, nil
-}
-
 func (r *InMemoryRepo) GetProductsForUpdate(ids []uuid.UUID) ([]products.Product, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+	r.tx.Lock()
 
-	// TODO: make mutex for each product to simulate transaction with blocking raws
 	ps := make([]products.Product, 0, len(ids))
 	for _, id := range ids {
 		p, ok := r.products[id]
 		if !ok {
-			return nil, products.ErrProductNotFound
+			return nil, fmt.Errorf("%w: id %s", products.ErrProductNotFound, id)
 		}
-		product, err := products.NewProduct(id, p.Name, p.Price, p.Category, p.Quantity)
+		product, err := products.NewProduct(id, p.Name, p.Price, p.Available)
 		if err != nil {
 			return nil, err
 		}
 		ps = append(ps, *product)
 	}
 	return ps, nil
+}
+
+func (r *InMemoryRepo) CancelUpdate() {
+	r.tx.TryLock()
+	r.tx.Unlock()
 }

@@ -18,7 +18,6 @@ type CreateResponse struct {
 	ID string `json:"id"`
 }
 
-// CreateUser brings some json data from request body and returns it as response.
 func (h *Handler) CreateUser(c echo.Context) error {
 	var data CreateRequest
 	if err := c.Bind(&data); err != nil {
