@@ -48,6 +48,10 @@ go install golang.org/x/tools/cmd/goimports@latest
 go install github.com/segmentio/golines@latest
 ```
 
+```sh
+go install github.com/swaggo/swag/cmd/swag
+```
+
 Если вы используете goenv:
 
 ```sh

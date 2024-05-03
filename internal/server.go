@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
+	_ "go-echo-ddd-template/docs" // init swagger
 	"go-echo-ddd-template/internal/application/orders"
 	"go-echo-ddd-template/internal/application/users"
 	ordersInfra "go-echo-ddd-template/internal/infrastructure/orders"
@@ -14,6 +15,7 @@ import (
 	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	swagger "github.com/swaggo/echo-swagger"
 )
 
 func newServer(_ Config) *echo.Echo {
@@ -25,6 +27,11 @@ func newServer(_ Config) *echo.Echo {
 	e.Use(middleware.Recover())
 	e.Use(sentryecho.New(sentryecho.Options{Repanic: true}))
 	e.Use(echomiddleware.PutSentryContext)
+
+	e.GET("/swagger/*", swagger.WrapHandler)
+	e.GET("/swagger", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	})
 
 	e.GET("/ping", func(c echo.Context) error {
 		return c.String(http.StatusOK, "pong")

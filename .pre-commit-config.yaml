@@ -19,8 +19,20 @@ repos:
         language: system
         types: [go]
 
+      - id: swag-fmt
+        name: swag-fmt
+        entry: sh -c 'swag fmt ./...'
+        language: system
+        types: [go]
+
       - id: golangci-lint
         name: golangci-lint
         entry: sh -c 'golangci-lint run ./...'
+        language: system
+        types: [go]
+
+      - id: check-go-generate
+        name: Check Go Generate
+        entry: sh -c './check-go-generate.sh'
         language: system
         types: [go]

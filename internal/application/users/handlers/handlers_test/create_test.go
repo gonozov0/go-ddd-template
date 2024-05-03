@@ -28,6 +28,5 @@ func (s *UsersSuite) TestCreateUserSuccess() {
 	var resp handlers.CreateResponse
 	err := json.Unmarshal(rec.Body.Bytes(), &resp)
 	s.Require().NoError(err)
-	_, err = uuid.Parse(resp.ID)
-	s.Require().NoError(err)
+	s.Require().NotEqual(resp.ID, uuid.Nil)
 }

@@ -1,0 +1,159 @@
+definitions:
+  go-echo-ddd-template_pkg_responses.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  internal_application_orders_handlers.ConflictResponse:
+    properties:
+      message:
+        type: string
+      product_ids:
+        items:
+          type: string
+        type: array
+    type: object
+  internal_application_orders_handlers.CreateRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/internal_application_orders_handlers.Item'
+        type: array
+    type: object
+  internal_application_orders_handlers.CreateResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  internal_application_orders_handlers.Item:
+    properties:
+      id:
+        type: string
+    type: object
+  internal_application_users_handlers.CreateRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  internal_application_users_handlers.CreateResponse:
+    properties:
+      id:
+        description: ID is the UUID of the newly created user.
+        type: string
+    type: object
+  internal_application_users_handlers.GetResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /orders:
+    post:
+      consumes:
+      - application/json
+      description: Creates an order with the items provided and processes payment
+      parameters:
+      - description: Order creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_application_orders_handlers.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Order successfully created
+          schema:
+            $ref: '#/definitions/internal_application_orders_handlers.CreateResponse'
+        "400":
+          description: Invalid request data
+          schema:
+            $ref: '#/definitions/go-echo-ddd-template_pkg_responses.ErrorResponse'
+        "404":
+          description: User or product not found
+          schema:
+            $ref: '#/definitions/go-echo-ddd-template_pkg_responses.ErrorResponse'
+        "409":
+          description: Products already reserved
+          schema:
+            $ref: '#/definitions/internal_application_orders_handlers.ConflictResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/go-echo-ddd-template_pkg_responses.ErrorResponse'
+      summary: Create and pay for an order
+      tags:
+      - orders
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided name and email
+      parameters:
+      - description: User creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_application_users_handlers.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User successfully created
+          schema:
+            $ref: '#/definitions/internal_application_users_handlers.CreateResponse'
+        "400":
+          description: Invalid input data
+          schema:
+            $ref: '#/definitions/go-echo-ddd-template_pkg_responses.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/go-echo-ddd-template_pkg_responses.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves user details using the user ID provided in the path
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details successfully retrieved
+          schema:
+            $ref: '#/definitions/internal_application_users_handlers.GetResponse'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/go-echo-ddd-template_pkg_responses.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/go-echo-ddd-template_pkg_responses.ErrorResponse'
+        "500":
+          description: Failed to get user
+          schema:
+            $ref: '#/definitions/go-echo-ddd-template_pkg_responses.ErrorResponse'
+      summary: Get a user by ID
+      tags:
+      - users
+swagger: "2.0"
