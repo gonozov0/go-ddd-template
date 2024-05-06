@@ -21,8 +21,10 @@ func Run() error {
 		slog.Error("Could not load config", "err", err)
 		return err
 	}
-
-	sentry.Init(config.SentryDSN, config.SentryEnvironment)
+	if err = sentry.Init(config.Sentry.DSN, config.Sentry.Environment); err != nil {
+		slog.Error("Could not init sentry", "err", err)
+		return err
+	}
 	logger.Setup()
 
 	server := newServer(config)
@@ -32,14 +34,15 @@ func Run() error {
 
 	g.Go(func() error {
 		<-ctx.Done()
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), config.InterruptTimeout)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), config.Server.InterruptTimeout)
 		defer cancel()
 		return server.Shutdown(shutdownCtx)
 	})
 
+	address := "0.0.0.0:" + config.Server.Port
 	g.Go(func() error {
-		slog.Info("Starting server at 0.0.0.0:8080")
-		if err := server.Start("0.0.0.0:8080"); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		slog.Info("Starting server at " + address)
+		if err := server.Start(address); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
 		return nil

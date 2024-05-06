@@ -24,12 +24,12 @@ func (suite *RedisRepoSuite) SetupSuite() {
 	suite.Require().NoError(err)
 
 	repo := usersInfra.NewRedisRepo(
-		config.RedisClusterMode,
-		config.RedisTLSEnabled,
-		config.RedisAddress,
-		config.RedisUsername,
-		config.RedisPassword,
-		config.RedisExpiration,
+		config.Redis.ClusterMode,
+		config.Redis.TLSEnabled,
+		config.Redis.Address,
+		config.Redis.Username,
+		config.Redis.Password,
+		config.Redis.Expiration,
 	)
 	suite.repo = repo
 	suite.ctx = context.Background()

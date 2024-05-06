@@ -1,14 +1,12 @@
 package sentry
 
 import (
-	"log/slog"
-
 	"github.com/getsentry/sentry-go"
 )
 
-func Init(dsn, environment string) {
+func Init(dsn, environment string) error {
 	if dsn == "" {
-		return
+		return nil
 	}
 	tracesSampleRate := 0.7
 	err := sentry.Init(sentry.ClientOptions{
@@ -18,6 +16,7 @@ func Init(dsn, environment string) {
 		Environment:      environment,
 	})
 	if err != nil {
-		slog.Error("sentry.Init: %s", err)
+		return err
 	}
+	return nil
 }
