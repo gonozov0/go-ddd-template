@@ -1,10 +1,12 @@
 package sentry
 
 import (
+	"go-echo-ddd-template/pkg/environment"
+
 	"github.com/getsentry/sentry-go"
 )
 
-func Init(dsn, environment string) error {
+func Init(dsn string, environment environment.Type) error {
 	if dsn == "" {
 		return nil
 	}
@@ -13,7 +15,7 @@ func Init(dsn, environment string) error {
 		Dsn:              dsn,
 		TracesSampleRate: tracesSampleRate,
 		AttachStacktrace: true,
-		Environment:      environment,
+		Environment:      string(environment),
 	})
 	if err != nil {
 		return err

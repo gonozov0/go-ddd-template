@@ -11,6 +11,7 @@ import (
 	productsInfra "go-echo-ddd-template/internal/infrastructure/products"
 	usersInfra "go-echo-ddd-template/internal/infrastructure/users"
 	"go-echo-ddd-template/pkg/echomiddleware"
+	"go-echo-ddd-template/pkg/environment"
 
 	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"
@@ -18,7 +19,7 @@ import (
 	swagger "github.com/swaggo/echo-swagger"
 )
 
-func newServer(_ Config) *echo.Echo {
+func newServer(config Config) *echo.Echo {
 	e := echo.New()
 
 	e.Pre(middleware.RemoveTrailingSlash())
@@ -28,10 +29,12 @@ func newServer(_ Config) *echo.Echo {
 	e.Use(sentryecho.New(sentryecho.Options{Repanic: true}))
 	e.Use(echomiddleware.PutSentryContext)
 
-	e.GET("/swagger/*", swagger.WrapHandler)
-	e.GET("/swagger", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
-	})
+	if config.Server.Environment != environment.Production {
+		e.GET("/swagger/*", swagger.WrapHandler)
+		e.GET("/swagger", func(c echo.Context) error {
+			return c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+		})
+	}
 
 	e.GET("/ping", func(c echo.Context) error {
 		return c.String(http.StatusOK, "pong")

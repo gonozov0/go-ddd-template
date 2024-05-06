@@ -3,7 +3,6 @@ package e2e_test
 import (
 	"log/slog"
 	"os"
-	"syscall"
 	"testing"
 	"time"
 
@@ -36,7 +35,7 @@ func (suite *APITestSuite) TearDownSuite() {
 	p, err := os.FindProcess(os.Getpid())
 	suite.Require().NoError(err)
 
-	err = p.Signal(syscall.SIGTERM)
+	err = p.Signal(os.Interrupt)
 	suite.Require().NoError(err)
 
 	// Wait for the server to stop
