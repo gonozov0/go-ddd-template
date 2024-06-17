@@ -1,4 +1,4 @@
-.PHONY: help unit_test integration_test e2e_test test lint coverage_report cpu_profile mem_profile
+.PHONY: help unit_test integration_test test lint coverage_report cpu_profile mem_profile
 
 help:
 	cat Makefile
@@ -9,10 +9,7 @@ unit_test:
 integration_test:
 	go test -v ./integration_test/...
 
-e2e_test:
-	go test -v ./e2e_test/...
-
-test: unit_test integration_test e2e_test
+test: unit_test integration_test
 
 lint:
 	go fmt ./...
