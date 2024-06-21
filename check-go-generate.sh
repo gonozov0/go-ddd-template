@@ -1,13 +1,13 @@
 #!/bin/bash
 
 temp_dir=$(mktemp -d)
-cp -r ./docs/* "$temp_dir"
+cp -r ./generated/* "$temp_dir"
 
 go generate ./...
 
-diff -r "$temp_dir" ./docs
+diff -r "$temp_dir" ./generated
 if [ $? -ne 0 ]; then
-    echo "Swagger documentation files have changed. Please update them in your repository."
+    echo "Generated files have changes. Please update them in your local repository."
     exit 1
 fi
 

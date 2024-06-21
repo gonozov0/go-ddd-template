@@ -49,19 +49,11 @@ go install github.com/segmentio/golines@latest
 ```
 
 ```sh
-go install github.com/swaggo/swag/cmd/swag
+go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 ```
 
-Если вы используете goenv:
-
 ```sh
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $GOENV_ROOT/bin v1.56.2
-```
-
-Если вы установили go через brew:
-
-```sh
-brew install golangci-lint
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 ```
 
 ### Pre-commit hooks

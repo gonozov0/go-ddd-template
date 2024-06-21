@@ -9,6 +9,10 @@ import (
 	"os"
 	"os/signal"
 
+	"go-echo-ddd-template/internal/application"
+	ordersInfra "go-echo-ddd-template/internal/infrastructure/orders"
+	productsInfra "go-echo-ddd-template/internal/infrastructure/products"
+	usersInfra "go-echo-ddd-template/internal/infrastructure/users"
 	"go-echo-ddd-template/pkg/logger"
 	"go-echo-ddd-template/pkg/sentry"
 
@@ -48,7 +52,10 @@ func Run() error {
 
 func startServer(ctx context.Context, g *errgroup.Group, cfg Config) {
 	address := "0.0.0.0:" + cfg.Server.Port
-	server := newServer(cfg)
+	userRepo := usersInfra.NewPostgresRepo()
+	productRepo := productsInfra.NewPostgresRepo()
+	orderRepo := ordersInfra.NewPostgresRepo()
+	server := application.SetupServer(userRepo, orderRepo, productRepo)
 	g.Go(func() error {
 		slog.Info("Starting server at " + address)
 		if err := server.Start(address); err != nil && !errors.Is(err, http.ErrServerClosed) {

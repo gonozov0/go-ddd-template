@@ -3,6 +3,12 @@
 help:
 	cat Makefile
 
+install:
+	go install golang.org/x/tools/cmd/goimports@latest
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/segmentio/golines@latest
+	go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+
 unit_test:
 	go test -v ./internal/...
 
@@ -15,7 +21,6 @@ lint:
 	go fmt ./...
 	find . -name '*.go' -exec goimports -local go-echo-ddd-template/ -w {} +
 	find . -name '*.go' -exec golines -w {} -m 120 \;
-	swag fmt ./...
 	golangci-lint run ./...
 
 

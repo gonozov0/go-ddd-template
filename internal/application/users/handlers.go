@@ -1,4 +1,4 @@
-package handlers
+package users
 
 import (
 	"go-echo-ddd-template/internal/domain/users"
@@ -11,12 +11,12 @@ type Repository interface {
 	GetUser(id uuid.UUID) (*users.User, error)
 }
 
-type Handler struct {
+type UserHandlers struct {
 	repo Repository
 }
 
-func NewHandler(repo Repository) *Handler {
-	return &Handler{
+func SetupHandlers(repo Repository) UserHandlers {
+	return UserHandlers{
 		repo: repo,
 	}
 }
