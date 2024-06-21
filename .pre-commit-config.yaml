@@ -19,12 +19,6 @@ repos:
         language: system
         types: [go]
 
-      - id: swag-fmt
-        name: swag-fmt
-        entry: sh -c 'swag fmt ./...'
-        language: system
-        types: [go]
-
       - id: golangci-lint
         name: golangci-lint
         entry: sh -c 'golangci-lint run ./...'

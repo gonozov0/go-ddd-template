@@ -1,4 +1,4 @@
-package handlers
+package orders
 
 import (
 	"go-echo-ddd-template/internal/domain/orders"
@@ -23,14 +23,14 @@ type ProductRepository interface {
 	CancelUpdate()
 }
 
-type Handler struct {
+type OrderHandlers struct {
 	orderRepo   OrderRepository
 	userRepo    UserRepository
 	productRepo ProductRepository
 }
 
-func NewHandler(or OrderRepository, ur UserRepository, pr ProductRepository) *Handler {
-	return &Handler{
+func SetupHandlers(or OrderRepository, ur UserRepository, pr ProductRepository) OrderHandlers {
+	return OrderHandlers{
 		orderRepo:   or,
 		userRepo:    ur,
 		productRepo: pr,
