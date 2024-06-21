@@ -1,6 +1,7 @@
 package users
 
 import (
+	"go-echo-ddd-template/generated/protobuf"
 	"go-echo-ddd-template/internal/domain/users"
 
 	"github.com/google/uuid"
@@ -12,6 +13,7 @@ type Repository interface {
 }
 
 type UserHandlers struct {
+	protobuf.UnimplementedUserServiceServer
 	repo Repository
 }
 

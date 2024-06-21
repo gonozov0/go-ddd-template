@@ -22,7 +22,7 @@ func (s *UsersSuite) TestCreateUserSuccess() {
 	req := httptest.NewRequest(http.MethodPost, "/users", bytes.NewBuffer(reqBody))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
-	s.Echo.ServeHTTP(rec, req)
+	s.HTTPServer.ServeHTTP(rec, req)
 
 	s.Require().Equal(http.StatusCreated, rec.Code)
 	var resp openapi.CreateUserResponse

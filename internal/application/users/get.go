@@ -1,14 +1,19 @@
 package users
 
 import (
+	"context"
 	"errors"
 	"net/http"
 
 	"go-echo-ddd-template/generated/openapi"
+	"go-echo-ddd-template/generated/protobuf"
 	"go-echo-ddd-template/internal/domain/users"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (h UserHandlers) GetUsersId( //nolint:revive,stylecheck // fit to generated code
@@ -31,4 +36,24 @@ func (h UserHandlers) GetUsersId( //nolint:revive,stylecheck // fit to generated
 		Name:  &name,
 		Email: &email,
 	})
+}
+
+func (h UserHandlers) GetUser(_ context.Context, req *protobuf.GetUserRequest) (*protobuf.GetUserResponse, error) {
+	uid, err := uuid.Parse(req.GetId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid UUID")
+	}
+	user, err := h.repo.GetUser(uid)
+	if err != nil {
+		if errors.Is(err, users.ErrUserNotFound) {
+			return nil, err
+		}
+		return nil, err
+	}
+
+	return &protobuf.GetUserResponse{
+		Id:    user.ID().String(),
+		Name:  user.Name(),
+		Email: user.Email(),
+	}, nil
 }

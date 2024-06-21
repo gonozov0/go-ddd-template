@@ -26,6 +26,8 @@ jobs:
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
           go install github.com/segmentio/golines@latest
           go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest                                                                                            260ms  Fri Jun 21 15:17:48 2024
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
       - name: Lint code
         run: |
@@ -34,12 +36,12 @@ jobs:
             echo "These files are not formatted with 'go fmt': $unformatted"
             exit 1
           fi
-          unformatted=$(find . -name '*.go' -exec goimports -local go-echo-ddd-template/ -l {} +)
+          unformatted=$(find . -name '*.go' ! -path "./generated/*" -exec goimports -local go-echo-ddd-template/ -l {} +)
           if [ -n "$unformatted" ]; then
             echo "These files are not formatted with 'goimports': $unformatted"
             exit 1
           fi
-          unformatted=$(find . -name '*.go' -exec golines -w {} -m 120 \;)
+          unformatted=$(find . -name '*.go' ! -path "./generated/*" -exec golines -w {} -m 120 \;)
           if [ -n "$unformatted" ]; then
             echo "These files are not formatted with 'golines': $unformatted"
             exit 1

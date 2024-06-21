@@ -18,7 +18,7 @@ func (s *UsersSuite) TestGetUser() {
 
 	req := httptest.NewRequest(http.MethodGet, "/users/"+user.ID().String(), nil)
 	rec := httptest.NewRecorder()
-	s.Echo.ServeHTTP(rec, req)
+	s.HTTPServer.ServeHTTP(rec, req)
 
 	s.Require().Equal(http.StatusOK, rec.Code, rec.Body.String())
 	var resp openapi.GetUserResponse
@@ -32,7 +32,7 @@ func (s *UsersSuite) TestGetUser() {
 func (s *UsersSuite) TestGetUserNotFound() {
 	req := httptest.NewRequest(http.MethodGet, "/users/"+uuid.New().String(), nil)
 	rec := httptest.NewRecorder()
-	s.Echo.ServeHTTP(rec, req)
+	s.HTTPServer.ServeHTTP(rec, req)
 
 	s.Require().Equal(http.StatusNotFound, rec.Code, rec.Body.String())
 	s.Require().Equal(`{"message":"user not found"}`+"\n", rec.Body.String())

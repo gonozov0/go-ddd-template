@@ -55,7 +55,7 @@ func startServer(ctx context.Context, g *errgroup.Group, cfg Config) {
 	userRepo := usersInfra.NewPostgresRepo()
 	productRepo := productsInfra.NewPostgresRepo()
 	orderRepo := ordersInfra.NewPostgresRepo()
-	server := application.SetupServer(userRepo, orderRepo, productRepo)
+	server := application.SetupHTTPServer(userRepo, orderRepo, productRepo)
 	g.Go(func() error {
 		slog.Info("Starting server at " + address)
 		if err := server.Start(address); err != nil && !errors.Is(err, http.ErrServerClosed) {

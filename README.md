@@ -38,22 +38,15 @@ goenv global 1.x.x
 
 ### Линтеры
 
-Для запуска `make lint` необходимо установить линтеры и форматтеры:
+Для запуска `make lint` и `go generate ./...` необходимо установить следующие утилиты:
 
 ```sh
 go install golang.org/x/tools/cmd/goimports@latest
-```
-
-```sh
 go install github.com/segmentio/golines@latest
-```
-
-```sh
 go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-```
-
-```sh
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest                                                                                            260ms  Fri Jun 21 15:17:48 2024
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ```
 
 ### Pre-commit hooks
@@ -62,8 +55,5 @@ go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 
 ```sh
 brew install pre-commit
-```
-
-```sh
 pre-commit install
 ```
