@@ -46,7 +46,7 @@ func (h UserHandlers) GetUser(_ context.Context, req *protobuf.GetUserRequest) (
 	user, err := h.repo.GetUser(uid)
 	if err != nil {
 		if errors.Is(err, users.ErrUserNotFound) {
-			return nil, err
+			return nil, status.Error(codes.NotFound, "user not found")
 		}
 		return nil, err
 	}

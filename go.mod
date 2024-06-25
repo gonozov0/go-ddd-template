@@ -10,6 +10,7 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/levigross/grequests v0.0.0-20231203190023-9c307ef1f48d
 	github.com/oapi-codegen/runtime v1.1.1
+	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/sync v0.7.0
 	google.golang.org/grpc v1.64.0
