@@ -16,7 +16,7 @@ type TestSuite struct {
 }
 
 func (suite *TestSuite) TestPing() {
-	resp, err := grequests.Get(suite.ServerURL+"ping", nil)
+	resp, err := grequests.Get(suite.HTTPServerURL+"/ping", nil)
 	suite.Require().NoError(err)
 	suite.Require().Equal(http.StatusOK, resp.StatusCode)
 	suite.Require().Equal("pong", resp.String())

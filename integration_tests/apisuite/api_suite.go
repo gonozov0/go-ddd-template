@@ -12,22 +12,25 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const waitServerTimeout = time.Second * 2
+const (
+	waitServerTimeout = 2 * time.Second
+)
 
 type APITestSuite struct {
 	suite.Suite
-	ServerURL string
-	Conn      *grpc.ClientConn
+	HTTPServerURL string
+	GRPCServerURL string
+	Conn          *grpc.ClientConn
 }
 
 func (suite *APITestSuite) SetupSuite() {
-	suite.ServerURL = "http://localhost:8080/"
+	suite.GRPCServerURL = "localhost:8080"
+	suite.HTTPServerURL = "http://" + suite.GRPCServerURL
 
 	go func() {
 		err := internal.Run()
 		if err != nil {
-			slog.Error("Error while running the server", "err", err)
-			os.Exit(1)
+			suite.Fail("Failed to run server", err)
 		}
 	}()
 
@@ -35,7 +38,7 @@ func (suite *APITestSuite) SetupSuite() {
 
 	var err error
 	suite.Conn, err = grpc.NewClient(
-		suite.ServerURL,
+		suite.GRPCServerURL,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -51,14 +54,12 @@ func (suite *APITestSuite) TearDownSuite() {
 
 	p, err := os.FindProcess(os.Getpid())
 	if err != nil {
-		slog.Error("Failed to find process", "err", err)
-		os.Exit(1)
+		suite.Fail("Failed to find process", err)
 	}
 
 	err = p.Signal(os.Interrupt)
 	if err != nil {
-		slog.Error("Failed to send interrupt signal", "err", err)
-		os.Exit(1)
+		suite.Fail("Failed to send interrupt signal", err)
 	}
 
 	time.Sleep(waitServerTimeout)

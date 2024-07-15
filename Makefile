@@ -27,7 +27,8 @@ lint:
 
 
 coverage_report:
-	go test -coverpkg=./... -count=1 -coverprofile=.coverage.out ./...
+	# TODO: fix test execution in 1 thread
+	go test -p=1 -coverpkg=./... -count=1 -coverprofile=.coverage.out ./...
 	go tool cover -html .coverage.out -o .coverage.html
 	open ./.coverage.html
 

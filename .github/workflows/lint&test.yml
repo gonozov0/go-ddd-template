@@ -70,7 +70,8 @@ jobs:
           go-version: 1.22.1
 
       - name: Run tests
-        run: go test -coverpkg=./... -count=1 -coverprofile=coverage.out ./...
+        # TODO: fix test execution in 1 thread
+        run: go test -p=1 -coverpkg=./... -count=1 -coverprofile=coverage.out ./...
         env:
           REDIS_ADDRESS: localhost:6379
 

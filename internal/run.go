@@ -64,12 +64,12 @@ func startServers(ctx context.Context, g *errgroup.Group, cfg Config) error {
 	}
 
 	m := cmux.New(listener)
-	grpcListener := m.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
-	httpListener := m.Match(cmux.HTTP1Fast())
+	grpcListener := m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
+	httpListener := m.Match(cmux.Any())
 
-	userRepo := usersInfra.NewPostgresRepo()
-	productRepo := productsInfra.NewPostgresRepo()
-	orderRepo := ordersInfra.NewPostgresRepo()
+	userRepo := usersInfra.NewInMemoryRepo()
+	productRepo := productsInfra.NewInMemoryRepo()
+	orderRepo := ordersInfra.NewInMemoryRepo()
 
 	httpServer := application.SetupHTTPServer(userRepo, orderRepo, productRepo)
 	grpcServer := application.SetupGRPCServer(userRepo, orderRepo, productRepo)
