@@ -11,7 +11,7 @@ import (
 
 type ServerSuite struct {
 	suite.Suite
-	Echo         *echo.Echo
+	HTTPServer   *echo.Echo
 	UsersRepo    *usersInfra.InMemoryRepo
 	OrdersRepo   *ordersInfra.InMemoryRepo
 	ProductsRepo *productsInfra.InMemoryRepo
@@ -21,5 +21,5 @@ func (s *ServerSuite) SetupSuite() {
 	s.UsersRepo = usersInfra.NewInMemoryRepo()
 	s.OrdersRepo = ordersInfra.NewInMemoryRepo()
 	s.ProductsRepo = productsInfra.NewInMemoryRepo()
-	s.Echo = SetupServer(s.UsersRepo, s.OrdersRepo, s.ProductsRepo)
+	s.HTTPServer = SetupHTTPServer(s.UsersRepo, s.OrdersRepo, s.ProductsRepo)
 }

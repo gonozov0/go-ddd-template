@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package protobuf;
+
+option go_package = "go-echo-ddd-template/generated/protobuf;protobuf";
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+}
+
+message CreateUserResponse {
+  string id = 1;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message GetUserResponse {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message CreateOrderRequest {
+  repeated OrderItem items = 1;
+}
+
+message OrderItem {
+  string id = 1;
+}
+
+message CreateOrderResponse {
+  string id = 1;
+}
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+}
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+}

@@ -8,6 +8,8 @@ install:
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/segmentio/golines@latest
 	go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 unit_test:
 	go test -v ./internal/...
@@ -19,13 +21,14 @@ test: unit_test integration_test
 
 lint:
 	go fmt ./...
-	find . -name '*.go' -exec goimports -local go-echo-ddd-template/ -w {} +
-	find . -name '*.go' -exec golines -w {} -m 120 \;
+	find . -name '*.go' ! -path "./generated/*" -exec goimports -local go-echo-ddd-template/ -w {} +
+	find . -name '*.go' ! -path "./generated/*" -exec golines -w {} -m 120 \;
 	golangci-lint run ./...
 
 
 coverage_report:
-	go test -coverpkg=./... -count=1 -coverprofile=.coverage.out ./...
+	# TODO: fix test execution in 1 thread
+	go test -p=1 -coverpkg=./... -count=1 -coverprofile=.coverage.out ./...
 	go tool cover -html .coverage.out -o .coverage.html
 	open ./.coverage.html
 

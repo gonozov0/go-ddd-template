@@ -1,4 +1,4 @@
-package users_test
+package infrastructure_test
 
 import (
 	"testing"

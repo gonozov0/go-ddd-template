@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"go-echo-ddd-template/generated/protobuf"
 	"go-echo-ddd-template/internal/domain/orders"
 	"go-echo-ddd-template/internal/domain/products"
 	"go-echo-ddd-template/internal/domain/users"
@@ -24,6 +25,7 @@ type ProductRepository interface {
 }
 
 type OrderHandlers struct {
+	protobuf.UnimplementedOrderServiceServer
 	orderRepo   OrderRepository
 	userRepo    UserRepository
 	productRepo ProductRepository
