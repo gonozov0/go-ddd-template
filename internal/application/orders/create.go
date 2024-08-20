@@ -76,18 +76,17 @@ func (h OrderHandlers) CreateOrder(
 	// TODO: implement authentication interceptor
 	order, err := ocs.CreateOrder(ctx.Value("user_id").(uuid.UUID), items)
 	if err != nil {
-		msg := err.Error()
 		var reservedErr *service.ProductsAlreadyReservedError
 		if errors.As(err, &reservedErr) {
-			return nil, status.Errorf(codes.Aborted, "%s: %v", msg, reservedErr.ProductIDs)
+			return nil, status.Errorf(codes.Aborted, "products already reserved: %v", reservedErr.ProductIDs)
 		}
 		if errors.Is(err, usersDomain.ErrUserNotFound) {
-			return nil, status.Errorf(codes.NotFound, msg)
+			return nil, status.Errorf(codes.NotFound, "user not found")
 		}
 		if errors.Is(err, productsDomain.ErrProductNotFound) {
-			return nil, status.Errorf(codes.NotFound, msg)
+			return nil, status.Errorf(codes.NotFound, "product not found")
 		}
-		return nil, status.Errorf(codes.Internal, msg)
+		return nil, status.Errorf(codes.Internal, "internal server error")
 	}
 	return &protobuf.CreateOrderResponse{
 		Id: order.ID().String(),
