@@ -3,16 +3,15 @@ package internal
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
-	"net"
 	"net/http"
 	_ "net/http/pprof" //nolint:gosec // pprof port is not exposed to the internet
 	"os"
 	"os/signal"
 	"strings"
 
-	"github.com/soheilhy/cmux"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
 	"go-echo-ddd-template/internal/application"
 	ordersInfra "go-echo-ddd-template/internal/infrastructure/orders"
@@ -40,12 +39,7 @@ func Run() error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
-	err = startServers(ctx, g, cfg)
-	if err != nil {
-		slog.Error("Could not start servers", "err", err)
-		return err
-	}
-
+	startServers(ctx, g, cfg)
 	if cfg.Server.PprofPort != "" {
 		startPprofServer(ctx, g, cfg)
 	}
@@ -57,16 +51,7 @@ func Run() error {
 	return nil
 }
 
-func startServers(ctx context.Context, g *errgroup.Group, cfg Config) error {
-	listener, err := net.Listen("tcp", "0.0.0.0:"+cfg.Server.Port)
-	if err != nil {
-		return fmt.Errorf("failed to listen: %w", err)
-	}
-
-	m := cmux.New(listener)
-	grpcListener := m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldSendSettings("content-type", "application/grpc"))
-	httpListener := m.Match(cmux.Any())
-
+func startServers(ctx context.Context, g *errgroup.Group, cfg Config) {
 	userRepo := usersInfra.NewInMemoryRepo()
 	productRepo := productsInfra.NewInMemoryRepo()
 	orderRepo := ordersInfra.NewInMemoryRepo()
@@ -74,49 +59,37 @@ func startServers(ctx context.Context, g *errgroup.Group, cfg Config) error {
 	httpServer := application.SetupHTTPServer(userRepo, orderRepo, productRepo)
 	grpcServer := application.SetupGRPCServer(userRepo, orderRepo, productRepo)
 
-	slog.Info("Starting server http and grpc server 0.0.0.0:" + cfg.Server.Port)
-	g.Go(func() error {
-		//nolint:gosec,govet // timeouts set up on balancers
-		if err := http.Serve(httpListener, httpServer); err != nil {
-			if errors.Is(err, cmux.ErrServerClosed) {
-				slog.Info("HTTP server closed")
-				return nil
+	address := "0.0.0.0:" + cfg.Server.Port
+	server := &http.Server{
+		Addr: address,
+		Handler: h2c.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+				grpcServer.ServeHTTP(w, r)
+			} else {
+				httpServer.ServeHTTP(w, r)
 			}
-			return err
-		}
-		return nil
-	})
+		}), &http2.Server{}),
+		ReadHeaderTimeout: cfg.Server.ReadHeaderTimeout,
+	}
+
+	slog.Info("Starting server http and grpc server at " + address)
 	g.Go(func() error {
-		//nolint:govet // err is allowed to shadow
-		if err := grpcServer.Serve(grpcListener); err != nil {
-			if errors.Is(err, cmux.ErrServerClosed) {
-				slog.Info("GRPC server closed")
-				return nil
-			}
-			return err
-		}
-		return nil
-	})
-	g.Go(func() error {
-		err = m.Serve()
-		if err != nil {
-			if strings.Contains(err.Error(), "use of closed network connection") {
-				slog.Info("shutting down a mux server")
-				return nil
-			}
-			slog.Error("Failed to serve", "err", err)
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
 		return nil
 	})
 	g.Go(func() error {
 		<-ctx.Done()
-		m.Close()
-		slog.Info("Server shut down gracefully")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.Server.InterruptTimeout)
+		defer cancel()
+		err := httpServer.Shutdown(shutdownCtx)
+		if err != nil {
+			return err
+		}
+		slog.Info("Http and grpc server shut down gracefully")
 		return nil
 	})
-
-	return nil
 }
 
 func startPprofServer(ctx context.Context, g *errgroup.Group, cfg Config) {

@@ -35,10 +35,11 @@ func LoadConfig() (Config, error) {
 }
 
 type Server struct {
-	Environment      environment.Type
-	Port             string
-	InterruptTimeout time.Duration
-	PprofPort        string
+	Environment       environment.Type
+	Port              string
+	InterruptTimeout  time.Duration
+	ReadHeaderTimeout time.Duration
+	PprofPort         string
 }
 
 func loadServer() (Server, error) {
@@ -46,11 +47,16 @@ func loadServer() (Server, error) {
 
 	server.Environment = environment.Type(getEnv("ENV_TYPE", string(environment.Testing)))
 	server.Port = getEnv("SERVER_PORT", "8080")
-	interruptTimeout, err := time.ParseDuration(getEnv("KILL_TIMEOUT", "2s"))
+	interruptTimeout, err := time.ParseDuration(getEnv("INTERRUPT_TIMEOUT", "2s"))
 	if err != nil {
-		return server, fmt.Errorf("could not parse kill timeout: %w", err)
+		return server, fmt.Errorf("could not parse interrupt timeout: %w", err)
 	}
 	server.InterruptTimeout = interruptTimeout
+	readHeaderTimeout, err := time.ParseDuration(getEnv("READ_HEADER_TIMEOUT", "5s"))
+	if err != nil {
+		return server, fmt.Errorf("could not parse read header timeout: %w", err)
+	}
+	server.ReadHeaderTimeout = readHeaderTimeout
 	server.PprofPort = getEnv("PPROF_PORT", "6060")
 
 	return server, nil
