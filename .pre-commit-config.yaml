@@ -9,7 +9,7 @@ repos:
 
       - id: goimports
         name: goimports
-        entry: sh -c 'find . -name "*.go" ! -path "./generated/*" -exec goimports -local go-echo-ddd-template/ -w {} +'
+        entry: sh -c 'find . -name "*.go" ! -path "./generated/*" -exec goimports -local go-echo-template/ -w {} +'
         language: system
         types: [go]
 

@@ -1,7 +1,7 @@
 package sentry
 
 import (
-	"go-echo-ddd-template/pkg/environment"
+	"go-echo-template/pkg/environment"
 
 	"github.com/getsentry/sentry-go"
 )

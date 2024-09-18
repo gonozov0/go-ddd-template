@@ -24,6 +24,7 @@
 go.work
 
 .env
+.env.fish
 .idea
 .code
 

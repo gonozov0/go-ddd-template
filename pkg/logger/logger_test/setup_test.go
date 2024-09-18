@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"testing"
 
-	"go-echo-ddd-template/pkg/logger"
+	"go-echo-template/pkg/logger"
 )
 
 func TestSetup(_ *testing.T) {

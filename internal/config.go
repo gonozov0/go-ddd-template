@@ -6,13 +6,19 @@ import (
 	"strings"
 	"time"
 
-	"go-echo-ddd-template/pkg/environment"
+	"go-echo-template/pkg/environment"
+)
+
+const (
+	falseStr = "false"
+	trueStr  = "true"
 )
 
 type Config struct {
-	Server Server
-	Sentry Sentry
-	Redis  Redis
+	Server   Server
+	Sentry   Sentry
+	Redis    Redis
+	Postgres Postgres
 }
 
 func LoadConfig() (Config, error) {
@@ -30,6 +36,7 @@ func LoadConfig() (Config, error) {
 	if err != nil {
 		return config, fmt.Errorf("could not load redis config: %w", err)
 	}
+	config.Postgres = loadPostgres()
 
 	return config, nil
 }
@@ -88,8 +95,8 @@ type Redis struct {
 func loadRedis() (Redis, error) {
 	var redis Redis
 
-	redis.ClusterMode = getEnv("REDIS_CLUSTER_MODE", "false") == "true"
-	redis.TLSEnabled = getEnv("REDIS_TLS_ENABLED", "false") == "true"
+	redis.ClusterMode = getEnv("REDIS_CLUSTER_MODE", falseStr) == trueStr
+	redis.TLSEnabled = getEnv("REDIS_TLS_ENABLED", falseStr) == trueStr
 	redis.Address = getEnv("REDIS_ADDRESS", "localhost:6379")
 	redis.Username = getEnv("REDIS_USERNAME", "")
 	redis.Password = getEnv("REDIS_PASSWORD", "")
@@ -103,9 +110,33 @@ func loadRedis() (Redis, error) {
 	return redis, nil
 }
 
+type Postgres struct {
+	Hosts         []string
+	Port          string
+	User          string
+	Password      string
+	Database      string
+	SSL           bool
+	MigrationPath string
+}
+
+func loadPostgres() Postgres {
+	var postgres Postgres
+
+	postgres.Hosts = strings.Split(getEnv("POSTGRES_HOSTS", "localhost"), ",")
+	postgres.Port = getEnv("POSTGRES_PORT", "5432")
+	postgres.User = getEnv("POSTGRES_USER", "postgres")
+	postgres.Password = getEnv("POSTGRES_PASSWORD", "postgres")
+	postgres.Database = getEnv("POSTGRES_DATABASE", "postgres")
+	postgres.SSL = getEnv("POSTGRES_SSL", falseStr) == trueStr
+	postgres.MigrationPath = getEnv("POSTGRES_MIGRATION_PATH", "")
+
+	return postgres
+}
+
 func getEnv(key, fallback string) string {
 	if value, exists := os.LookupEnv(key); exists {
-		return strings.ToLower(value)
+		return value
 	}
 	return fallback
 }

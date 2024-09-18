@@ -6,16 +6,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"go-echo-ddd-template/generated/openapi"
-	"go-echo-ddd-template/generated/protobuf"
-	"go-echo-ddd-template/internal/domain/users"
+	"go-echo-template/generated/openapi"
+	"go-echo-template/generated/protobuf"
+	"go-echo-template/internal/domain/users"
 
 	"github.com/google/uuid"
 )
 
 func (s *UsersSuite) TestGetUser() {
 	user, _ := users.CreateUser("test", "test@test.com")
-	err := s.UsersRepo.SaveUser(*user)
+	err := s.UsersRepo.SaveUser(context.Background(), *user)
 	s.Require().NoError(err)
 
 	s.Run("HTTP", func() {

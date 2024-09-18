@@ -1,4 +1,7 @@
-.PHONY: help unit_test integration_test test lint coverage_report cpu_profile mem_profile
+include .env
+export
+
+.PHONY: help unit_test integration_test test lint coverage_report cpu_profile mem_profile migrate_up migrate_down create_migration
 
 help:
 	cat Makefile
@@ -21,7 +24,7 @@ test: unit_test integration_test
 
 lint:
 	go fmt ./...
-	find . -name '*.go' ! -path "./generated/*" -exec goimports -local go-echo-ddd-template/ -w {} +
+	find . -name '*.go' ! -path "./generated/*" -exec goimports -local go-echo-template/ -w {} +
 	find . -name '*.go' ! -path "./generated/*" -exec golines -w {} -m 120 \;
 	golangci-lint run ./...
 
@@ -39,3 +42,14 @@ cpu_profile:
 mem_profile:
 	go test -memprofile=profiles/mem.prof ./e2e_test
 	go tool pprof -http=:6061 profiles/mem.prof
+
+DB_URL=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOSTS):$(POSTGRES_PORT)/$(POSTGRES_DATABASE)?sslmode=$(if $(filter $(POSTGRES_SSL),true),require,disable)
+
+migrate_up:
+	migrate -path migrations -database "$(DB_URL)" up
+
+migrate_down:
+	migrate -path migrations -database "$(DB_URL)" down $(count)
+
+create_migration:
+	migrate create -ext sql -dir migrations $(name)

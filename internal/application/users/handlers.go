@@ -1,15 +1,17 @@
 package users
 
 import (
-	"go-echo-ddd-template/generated/protobuf"
-	"go-echo-ddd-template/internal/domain/users"
+	"context"
+
+	"go-echo-template/generated/protobuf"
+	"go-echo-template/internal/domain/users"
 
 	"github.com/google/uuid"
 )
 
 type Repository interface {
-	SaveUser(u users.User) error
-	GetUser(id uuid.UUID) (*users.User, error)
+	SaveUser(ctx context.Context, u users.User) error
+	GetUser(ctx context.Context, id uuid.UUID) (*users.User, error)
 }
 
 type UserHandlers struct {

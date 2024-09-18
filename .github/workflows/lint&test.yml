@@ -36,7 +36,7 @@ jobs:
             echo "These files are not formatted with 'go fmt': $unformatted"
             exit 1
           fi
-          unformatted=$(find . -name '*.go' ! -path "./generated/*" -exec goimports -local go-echo-ddd-template/ -l {} +)
+          unformatted=$(find . -name '*.go' ! -path "./generated/*" -exec goimports -local go-echo-template/ -l {} +)
           if [ -n "$unformatted" ]; then
             echo "These files are not formatted with 'goimports': $unformatted"
             exit 1
@@ -59,6 +59,14 @@ jobs:
         image: redis:latest
         ports:
           - 6379:6379
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
 
     steps:
       - name: Checkout code
@@ -69,11 +77,28 @@ jobs:
         with:
           go-version: 1.22.1
 
+      - name: Apply migrations
+        run: go run ./cmd/migrator/main.go
+        env:
+          POSTGRES_HOSTS: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DATABASE: postgres
+          POSTGRES_SSL: false
+          POSTGRES_MIGRATION_PATH: "file://migrations"
+
       - name: Run tests
         # TODO: fix test execution in 1 thread
         run: go test -p=1 -coverpkg=./... -count=1 -coverprofile=coverage.out ./...
         env:
           REDIS_ADDRESS: localhost:6379
+          POSTGRES_HOSTS: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DATABASE: postgres
+          POSTGRES_SSL: false
 
       - name: Upload coverage to GitHub Artifacts
         uses: actions/upload-artifact@v4

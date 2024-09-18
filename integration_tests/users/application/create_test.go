@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"io"
 
-	"go-echo-ddd-template/generated/openapi"
-	"go-echo-ddd-template/generated/protobuf"
+	"go-echo-template/generated/openapi"
+	"go-echo-template/generated/protobuf"
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )

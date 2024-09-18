@@ -1,10 +1,11 @@
 package products
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
-	"go-echo-ddd-template/internal/domain/products"
+	"go-echo-template/internal/domain/products"
 
 	"github.com/google/uuid"
 )
@@ -17,7 +18,7 @@ type product struct {
 
 type InMemoryRepo struct {
 	products map[uuid.UUID]product
-	tx       sync.Mutex
+	mu       sync.Mutex
 }
 
 func NewInMemoryRepo() *InMemoryRepo {
@@ -26,8 +27,9 @@ func NewInMemoryRepo() *InMemoryRepo {
 	}
 }
 
-func (r *InMemoryRepo) SaveProducts(ps []products.Product) error {
-	defer r.tx.Unlock()
+func (r *InMemoryRepo) SaveProducts(_ context.Context, ps []products.Product) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	for _, p := range ps {
 		r.products[p.ID()] = product{
@@ -39,8 +41,9 @@ func (r *InMemoryRepo) SaveProducts(ps []products.Product) error {
 	return nil
 }
 
-func (r *InMemoryRepo) GetProductsForUpdate(ids []uuid.UUID) ([]products.Product, error) {
-	r.tx.Lock()
+func (r *InMemoryRepo) GetProductsForUpdate(_ context.Context, ids []uuid.UUID) ([]products.Product, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	ps := make([]products.Product, 0, len(ids))
 	for _, id := range ids {
@@ -55,9 +58,4 @@ func (r *InMemoryRepo) GetProductsForUpdate(ids []uuid.UUID) ([]products.Product
 		ps = append(ps, *product)
 	}
 	return ps, nil
-}
-
-func (r *InMemoryRepo) CancelUpdate() {
-	r.tx.TryLock()
-	r.tx.Unlock()
 }

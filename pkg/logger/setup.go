@@ -6,10 +6,12 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"runtime"
+	"strings"
 
 	"github.com/getsentry/sentry-go"
 
-	"go-echo-ddd-template/pkg/contextkeys"
+	"go-echo-template/pkg/contextkeys"
 )
 
 func Setup() {
@@ -36,13 +38,17 @@ func (h *sentryJSONCtxHandler) Handle(ctx context.Context, r slog.Record) error 
 	requestID := fmt.Sprintf("%v", ctx.Value(requestIDKey))
 	traceID := fmt.Sprintf("%v", ctx.Value(traceIDKey))
 
-	// Sending event to sentry
 	if r.Level == slog.LevelError {
+		stackTrace := getStackTrace()
+		r.AddAttrs(slog.String("stacktrace", stackTrace))
+
+		// Sending event to sentry
 		if hub, ok := ctx.Value(sentry.HubContextKey).(*sentry.Hub); ok && hub != nil {
 			hub.WithScope(func(scope *sentry.Scope) {
 				scope.SetLevel(sentry.LevelError)
 				scope.SetTag(string(requestIDKey), requestID)
 				scope.SetTag(string(traceIDKey), traceID)
+				scope.SetExtra("stacktrace", stackTrace)
 				hub.CaptureMessage(r.Message)
 			})
 		}
@@ -65,4 +71,13 @@ func newSentryJSONCtxHandler(w io.Writer, opts *slog.HandlerOptions) *sentryJSON
 	return &sentryJSONCtxHandler{
 		JSONHandler: jsonHandler,
 	}
+}
+
+const stackBufSize = 4096 // 4KB
+
+func getStackTrace() string {
+	stackBuf := make([]byte, stackBufSize)
+	stackSize := runtime.Stack(stackBuf, false)
+	stackTrace := string(stackBuf[:stackSize])
+	return strings.TrimSpace(stackTrace)
 }
