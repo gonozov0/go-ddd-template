@@ -13,7 +13,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 
-	"go-echo-ddd-template/internal/domain/users"
+	"go-echo-template/internal/domain/users"
 )
 
 type redisUser struct {

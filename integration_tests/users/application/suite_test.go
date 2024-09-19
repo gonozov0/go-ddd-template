@@ -3,9 +3,9 @@ package application_test
 import (
 	"testing"
 
-	"go-echo-ddd-template/generated/openapi"
-	"go-echo-ddd-template/generated/protobuf"
-	"go-echo-ddd-template/integration_tests/apisuite"
+	"go-echo-template/generated/openapi"
+	"go-echo-template/generated/protobuf"
+	"go-echo-template/integration_tests/apisuite"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -19,7 +19,7 @@ type UsersSuite struct {
 }
 
 func (s *UsersSuite) SetupSuite() {
-	s.APITestSuite.SetupSuite()
+	s.APITestSuite.SetupSuite("8082")
 	s.grpcClient = protobuf.NewUserServiceClient(s.Conn)
 	var err error
 	s.httpClient, err = openapi.NewClient(s.HTTPServerURL)

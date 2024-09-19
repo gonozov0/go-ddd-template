@@ -1,9 +1,10 @@
 package create
 
 import (
+	"context"
 	"errors"
 
-	"go-echo-ddd-template/internal/domain/products"
+	"go-echo-template/internal/domain/products"
 
 	"github.com/google/uuid"
 )
@@ -16,8 +17,8 @@ func (e ProductsAlreadyReservedError) Error() string {
 	return "products already reserved"
 }
 
-func (s *OrderCreationService) reserveProducts(items []Item) ([]products.Product, error) {
-	ps, err := s.productRepo.GetProductsForUpdate(getItemIDs(items))
+func (s *OrderCreationService) reserveProducts(ctx context.Context, items []Item) ([]products.Product, error) {
+	ps, err := s.productRepo.GetProductsForUpdate(ctx, getItemIDs(items))
 	if err != nil {
 		return nil, err
 	}

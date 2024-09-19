@@ -4,10 +4,10 @@ import (
 	"log/slog"
 	"net/http"
 
-	"go-echo-ddd-template/generated/openapi"
-	"go-echo-ddd-template/internal/application/orders"
-	"go-echo-ddd-template/internal/application/users"
-	"go-echo-ddd-template/pkg/echomiddleware"
+	"go-echo-template/generated/openapi"
+	"go-echo-template/internal/application/orders"
+	"go-echo-template/internal/application/users"
+	"go-echo-template/pkg/echomiddleware"
 
 	sentryecho "github.com/getsentry/sentry-go/echo"
 	"github.com/labstack/echo/v4"

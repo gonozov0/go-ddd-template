@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"go-echo-ddd-template/integration_tests/apisuite"
+	"go-echo-template/integration_tests/apisuite"
 
 	"github.com/levigross/grequests"
 	"github.com/stretchr/testify/suite"
@@ -13,6 +13,10 @@ import (
 type TestSuite struct {
 	suite.Suite
 	apisuite.APITestSuite
+}
+
+func (suite *TestSuite) SetupSuite() {
+	suite.APITestSuite.SetupSuite("8081")
 }
 
 func (suite *TestSuite) TestPing() {

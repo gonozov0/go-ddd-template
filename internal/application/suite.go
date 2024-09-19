@@ -1,9 +1,9 @@
 package application
 
 import (
-	ordersInfra "go-echo-ddd-template/internal/infrastructure/orders"
-	productsInfra "go-echo-ddd-template/internal/infrastructure/products"
-	usersInfra "go-echo-ddd-template/internal/infrastructure/users"
+	ordersInfra "go-echo-template/internal/infrastructure/orders"
+	productsInfra "go-echo-template/internal/infrastructure/products"
+	usersInfra "go-echo-template/internal/infrastructure/users"
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"

@@ -1,8 +1,10 @@
 package create
 
 import (
-	"go-echo-ddd-template/internal/domain/orders"
-	"go-echo-ddd-template/internal/domain/products"
+	"context"
+
+	"go-echo-template/internal/domain/orders"
+	"go-echo-template/internal/domain/products"
 
 	"github.com/google/uuid"
 )
@@ -11,18 +13,17 @@ type Item struct {
 	ID uuid.UUID
 }
 
-func (s *OrderCreationService) CreateOrder(userID uuid.UUID, items []Item) (*orders.Order, error) {
+func (s *OrderCreationService) CreateOrder(ctx context.Context, userID uuid.UUID, items []Item) (*orders.Order, error) {
 	// check if user exists
-	_, err := s.userRepo.GetUser(userID)
+	_, err := s.userRepo.GetUser(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	ps, err := s.reserveProducts(items)
+	ps, err := s.reserveProducts(ctx, items)
 	if err != nil {
 		return nil, err
 	}
-	defer s.productRepo.CancelUpdate()
 
 	orderItems, err := makeOrderItems(items, ps)
 	if err != nil {
@@ -32,11 +33,11 @@ func (s *OrderCreationService) CreateOrder(userID uuid.UUID, items []Item) (*ord
 	if err != nil {
 		return nil, err
 	}
-	if err = s.orderRepo.SaveOrder(*order); err != nil {
+	if err = s.orderRepo.SaveOrder(ctx, order); err != nil {
 		return nil, err
 	}
 
-	if err = s.productRepo.SaveProducts(ps); err != nil {
+	if err = s.productRepo.SaveProducts(ctx, ps); err != nil {
 		return nil, err
 	}
 

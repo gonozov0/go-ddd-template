@@ -3,8 +3,8 @@ package users_test
 import (
 	"testing"
 
-	"go-echo-ddd-template/internal/application"
-	"go-echo-ddd-template/internal/application/users"
+	"go-echo-template/internal/application"
+	"go-echo-template/internal/application/users"
 
 	"github.com/stretchr/testify/suite"
 )

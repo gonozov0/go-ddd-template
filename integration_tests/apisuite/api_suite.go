@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"go-echo-ddd-template/internal"
+	"go-echo-template/internal"
 
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc"
@@ -23,27 +23,33 @@ type APITestSuite struct {
 	Conn          *grpc.ClientConn
 }
 
-func (suite *APITestSuite) SetupSuite() {
-	suite.GRPCServerURL = "localhost:8080"
+func (suite *APITestSuite) SetupSuite(port string) {
+	cfg, err := internal.LoadConfig()
+	if err != nil {
+		suite.Fail("Failed to load config", err)
+	}
+	cfg.Server.Port = port
+	cfg.Server.PprofPort = ""
+
+	suite.GRPCServerURL = "localhost:" + port
 	suite.HTTPServerURL = "http://" + suite.GRPCServerURL
 
 	go func() {
-		err := internal.Run()
+		err := internal.Run(cfg)
 		if err != nil {
-			suite.Fail("Failed to run server", err)
+			slog.Error("Failed to run server", "err", err)
+			os.Exit(1)
 		}
 	}()
 
 	time.Sleep(waitServerTimeout)
 
-	var err error
 	suite.Conn, err = grpc.NewClient(
 		suite.GRPCServerURL,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		slog.Error("Failed to dial server", "err", err)
-		os.Exit(1)
+		suite.Fail("Failed to dial server", err)
 	}
 }
 

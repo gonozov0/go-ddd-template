@@ -1,9 +1,10 @@
 package users
 
 import (
+	"context"
 	"sync"
 
-	"go-echo-ddd-template/internal/domain/users"
+	"go-echo-template/internal/domain/users"
 
 	"github.com/google/uuid"
 )
@@ -24,7 +25,7 @@ func NewInMemoryRepo() *InMemoryRepo {
 	}
 }
 
-func (r *InMemoryRepo) SaveUser(u users.User) error {
+func (r *InMemoryRepo) SaveUser(_ context.Context, u users.User) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -35,7 +36,7 @@ func (r *InMemoryRepo) SaveUser(u users.User) error {
 	return nil
 }
 
-func (r *InMemoryRepo) GetUser(id uuid.UUID) (*users.User, error) {
+func (r *InMemoryRepo) GetUser(_ context.Context, id uuid.UUID) (*users.User, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

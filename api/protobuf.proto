@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protobuf;
 
-option go_package = "go-echo-ddd-template/generated/protobuf;protobuf";
+option go_package = "go-echo-template/generated/protobuf;protobuf";
 
 message CreateUserRequest {
   string name = 1;

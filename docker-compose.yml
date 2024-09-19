@@ -1,8 +1,19 @@
-version: '3'
-
 services:
   redis:
     image: redis
-    restart: always
     ports:
       - "6379:6379"
+
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

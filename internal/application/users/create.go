@@ -5,9 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"go-echo-ddd-template/generated/openapi"
-	"go-echo-ddd-template/generated/protobuf"
-	"go-echo-ddd-template/internal/domain/users"
+	"go-echo-template/generated/openapi"
+	"go-echo-template/generated/protobuf"
+	"go-echo-template/internal/domain/users"
 
 	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc/codes"
@@ -29,7 +29,7 @@ func (h UserHandlers) PostUsers(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, openapi.ErrorResponse{Message: &msg})
 	}
 
-	if err := h.repo.SaveUser(*user); err != nil {
+	if err := h.repo.SaveUser(c.Request().Context(), *user); err != nil {
 		msg := err.Error()
 		return c.JSON(http.StatusInternalServerError, openapi.ErrorResponse{Message: &msg})
 	}
@@ -39,7 +39,7 @@ func (h UserHandlers) PostUsers(c echo.Context) error {
 }
 
 func (h UserHandlers) CreateUser(
-	_ context.Context,
+	ctx context.Context,
 	req *protobuf.CreateUserRequest,
 ) (*protobuf.CreateUserResponse, error) {
 	user, err := users.CreateUser(req.GetName(), req.GetEmail())
@@ -50,7 +50,7 @@ func (h UserHandlers) CreateUser(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	if err := h.repo.SaveUser(*user); err != nil {
+	if err := h.repo.SaveUser(ctx, *user); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 

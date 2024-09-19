@@ -13,8 +13,8 @@ func main() {
 		slog.Error("Could not load config", "err", err)
 		os.Exit(1)
 	}
-	if err := internal.Run(cfg); err != nil {
-		slog.Error("Failed to run server", "err", err)
+	if err := internal.Migrate(cfg); err != nil {
+		slog.Error("Failed to migrate", "err", err)
 		os.Exit(1)
 	}
 }

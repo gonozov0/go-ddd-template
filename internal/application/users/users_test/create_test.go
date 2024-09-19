@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"go-echo-ddd-template/generated/openapi"
-	"go-echo-ddd-template/generated/protobuf"
+	"go-echo-template/generated/openapi"
+	"go-echo-template/generated/protobuf"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"

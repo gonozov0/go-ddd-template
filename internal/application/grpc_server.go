@@ -1,9 +1,9 @@
 package application
 
 import (
-	"go-echo-ddd-template/generated/protobuf"
-	"go-echo-ddd-template/internal/application/orders"
-	"go-echo-ddd-template/internal/application/users"
+	"go-echo-template/generated/protobuf"
+	"go-echo-template/internal/application/orders"
+	"go-echo-template/internal/application/users"
 
 	"google.golang.org/grpc"
 )

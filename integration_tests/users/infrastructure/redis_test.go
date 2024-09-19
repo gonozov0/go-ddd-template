@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"go-echo-ddd-template/internal"
-	"go-echo-ddd-template/internal/domain/users"
-	usersInfra "go-echo-ddd-template/internal/infrastructure/users"
+	"go-echo-template/internal"
+	"go-echo-template/internal/domain/users"
+	usersInfra "go-echo-template/internal/infrastructure/users"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"

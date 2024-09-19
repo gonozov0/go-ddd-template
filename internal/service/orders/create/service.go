@@ -1,26 +1,27 @@
 package create
 
 import (
-	"go-echo-ddd-template/internal/domain/orders"
-	"go-echo-ddd-template/internal/domain/products"
-	"go-echo-ddd-template/internal/domain/users"
+	"context"
+
+	"go-echo-template/internal/domain/orders"
+	"go-echo-template/internal/domain/products"
+	"go-echo-template/internal/domain/users"
 
 	"github.com/google/uuid"
 )
 
 type orderRepo interface {
-	SaveOrder(o orders.Order) error
-	GetOrder(id uuid.UUID) (*orders.Order, error)
+	SaveOrder(ctx context.Context, o *orders.Order) error
+	GetOrder(ctx context.Context, id uuid.UUID) (*orders.Order, error)
 }
 
 type userRepo interface {
-	GetUser(id uuid.UUID) (*users.User, error)
+	GetUser(ctx context.Context, id uuid.UUID) (*users.User, error)
 }
 
 type productRepo interface {
-	GetProductsForUpdate(ids []uuid.UUID) ([]products.Product, error)
-	SaveProducts(ps []products.Product) error
-	CancelUpdate()
+	GetProductsForUpdate(ctx context.Context, ids []uuid.UUID) ([]products.Product, error)
+	SaveProducts(ctx context.Context, ps []products.Product) error
 }
 
 type OrderCreationService struct {

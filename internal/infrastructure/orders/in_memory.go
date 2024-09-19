@@ -1,9 +1,10 @@
 package orders
 
 import (
+	"context"
 	"sync"
 
-	"go-echo-ddd-template/internal/domain/orders"
+	"go-echo-template/internal/domain/orders"
 
 	"github.com/google/uuid"
 )
@@ -25,7 +26,7 @@ func NewInMemoryRepo() *InMemoryRepo {
 	}
 }
 
-func (r *InMemoryRepo) SaveOrder(o orders.Order) error {
+func (r *InMemoryRepo) SaveOrder(_ context.Context, o *orders.Order) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -38,7 +39,7 @@ func (r *InMemoryRepo) SaveOrder(o orders.Order) error {
 	return nil
 }
 
-func (r *InMemoryRepo) GetOrder(id uuid.UUID) (*orders.Order, error) {
+func (r *InMemoryRepo) GetOrder(_ context.Context, id uuid.UUID) (*orders.Order, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

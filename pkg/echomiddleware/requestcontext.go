@@ -3,7 +3,7 @@ package echomiddleware
 import (
 	"context"
 
-	"go-echo-ddd-template/pkg/contextkeys"
+	"go-echo-template/pkg/contextkeys"
 
 	"github.com/labstack/echo/v4"
 )

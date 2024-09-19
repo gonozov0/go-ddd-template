@@ -5,11 +5,11 @@ import (
 	"errors"
 	"net/http"
 
-	"go-echo-ddd-template/generated/openapi"
-	"go-echo-ddd-template/generated/protobuf"
-	productsDomain "go-echo-ddd-template/internal/domain/products"
-	usersDomain "go-echo-ddd-template/internal/domain/users"
-	service "go-echo-ddd-template/internal/service/orders/create"
+	"go-echo-template/generated/openapi"
+	"go-echo-template/generated/protobuf"
+	productsDomain "go-echo-template/internal/domain/products"
+	usersDomain "go-echo-template/internal/domain/users"
+	service "go-echo-template/internal/service/orders/create"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -32,7 +32,7 @@ func (h OrderHandlers) PostOrders(c echo.Context) error {
 
 	ocs := service.NewOrderCreationService(h.orderRepo, h.userRepo, h.productRepo)
 	// TODO: implement authentication interceptor
-	order, err := ocs.CreateOrder(c.Get("user_id").(uuid.UUID), items)
+	order, err := ocs.CreateOrder(c.Request().Context(), c.Get("user_id").(uuid.UUID), items)
 	if err != nil {
 		msg := err.Error()
 		var reservedErr *service.ProductsAlreadyReservedError
@@ -74,7 +74,7 @@ func (h OrderHandlers) CreateOrder(
 
 	ocs := service.NewOrderCreationService(h.orderRepo, h.userRepo, h.productRepo)
 	// TODO: implement authentication interceptor
-	order, err := ocs.CreateOrder(ctx.Value("user_id").(uuid.UUID), items)
+	order, err := ocs.CreateOrder(ctx, ctx.Value("user_id").(uuid.UUID), items)
 	if err != nil {
 		var reservedErr *service.ProductsAlreadyReservedError
 		if errors.As(err, &reservedErr) {
