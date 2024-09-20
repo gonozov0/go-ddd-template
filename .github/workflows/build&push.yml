@@ -15,7 +15,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.22.1
+        go-version: 1.23.1
 
     - name: Build Go binary for Linux
       run: GOOS=linux GOARCH=amd64 go build -o ./bin/your-service-name ./cmd/main.go
