@@ -3,7 +3,6 @@ package products
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"go-echo-template/internal/domain/products"
 
@@ -18,7 +17,6 @@ type product struct {
 
 type InMemoryRepo struct {
 	products map[uuid.UUID]product
-	mu       sync.Mutex
 }
 
 func NewInMemoryRepo() *InMemoryRepo {
@@ -28,9 +26,6 @@ func NewInMemoryRepo() *InMemoryRepo {
 }
 
 func (r *InMemoryRepo) SaveProducts(_ context.Context, ps []products.Product) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	for _, p := range ps {
 		r.products[p.ID()] = product{
 			Name:      p.Name(),
@@ -42,9 +37,6 @@ func (r *InMemoryRepo) SaveProducts(_ context.Context, ps []products.Product) er
 }
 
 func (r *InMemoryRepo) GetProductsForUpdate(_ context.Context, ids []uuid.UUID) ([]products.Product, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	ps := make([]products.Product, 0, len(ids))
 	for _, id := range ids {
 		p, ok := r.products[id]

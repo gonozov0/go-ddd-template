@@ -33,5 +33,6 @@ func (s *UsersSuite) TearDownSuite() {
 }
 
 func TestUsersSuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(UsersSuite))
 }

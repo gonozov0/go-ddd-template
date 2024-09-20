@@ -27,5 +27,6 @@ func (suite *TestSuite) TestPing() {
 }
 
 func TestAPISuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(TestSuite))
 }

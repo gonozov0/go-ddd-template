@@ -41,7 +41,7 @@ func (suite *PostgresRepoSuite) SetupSuite() {
 	suite.repo = infra.NewPostgresRepo(cluster)
 }
 
-func (suite *PostgresRepoSuite) TestUser() {
+func (suite *PostgresRepoSuite) TestUserCRUD() {
 	created, err := domain.CreateUser("test", "test@test.com")
 	suite.Require().NoError(err)
 
@@ -67,5 +67,6 @@ func (suite *PostgresRepoSuite) TestUser() {
 }
 
 func TestPostgresRepoSuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(PostgresRepoSuite))
 }

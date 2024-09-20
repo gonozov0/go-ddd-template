@@ -2,7 +2,6 @@ package users
 
 import (
 	"context"
-	"sync"
 
 	"go-echo-template/internal/domain/users"
 
@@ -16,7 +15,6 @@ type user struct {
 
 type InMemoryRepo struct {
 	users map[uuid.UUID]user
-	mu    sync.RWMutex
 }
 
 func NewInMemoryRepo() *InMemoryRepo {
@@ -26,9 +24,6 @@ func NewInMemoryRepo() *InMemoryRepo {
 }
 
 func (r *InMemoryRepo) SaveUser(_ context.Context, u users.User) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	r.users[u.ID()] = user{
 		Name:  u.Name(),
 		Email: u.Email(),
@@ -37,9 +32,6 @@ func (r *InMemoryRepo) SaveUser(_ context.Context, u users.User) error {
 }
 
 func (r *InMemoryRepo) GetUser(_ context.Context, id uuid.UUID) (*users.User, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
 	u, ok := r.users[id]
 	if !ok {
 		return nil, users.ErrUserNotFound

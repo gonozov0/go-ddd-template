@@ -2,7 +2,6 @@ package orders
 
 import (
 	"context"
-	"sync"
 
 	"go-echo-template/internal/domain/orders"
 
@@ -17,7 +16,6 @@ type order struct {
 
 type InMemoryRepo struct {
 	orders map[uuid.UUID]order
-	mu     sync.RWMutex
 }
 
 func NewInMemoryRepo() *InMemoryRepo {
@@ -27,9 +25,6 @@ func NewInMemoryRepo() *InMemoryRepo {
 }
 
 func (r *InMemoryRepo) SaveOrder(_ context.Context, o *orders.Order) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	r.orders[o.ID()] = order{
 		userID: o.UserID(),
 		status: o.Status(),
@@ -40,9 +35,6 @@ func (r *InMemoryRepo) SaveOrder(_ context.Context, o *orders.Order) error {
 }
 
 func (r *InMemoryRepo) GetOrder(_ context.Context, id uuid.UUID) (*orders.Order, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
 	o, ok := r.orders[id]
 	if !ok {
 		return nil, orders.ErrOrderNotFound

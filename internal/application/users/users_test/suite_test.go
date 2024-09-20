@@ -12,14 +12,15 @@ import (
 type UsersSuite struct {
 	suite.Suite
 	application.ServerSuite
-	UserHandlers users.UserHandlers
+	GRPCHandlers users.UserHandlers
 }
 
-func (s *UsersSuite) SetupSuite() {
-	s.ServerSuite.SetupSuite()
-	s.UserHandlers = users.SetupHandlers(s.UsersRepo)
+func (s *UsersSuite) SetupTest() {
+	s.ServerSuite.SetupTest()
+	s.GRPCHandlers = users.SetupHandlers(s.UsersRepo)
 }
 
 func TestUsersSuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(UsersSuite))
 }
