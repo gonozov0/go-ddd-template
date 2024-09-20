@@ -7,12 +7,6 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
-// ConflictOrderResponse defines model for ConflictOrderResponse.
-type ConflictOrderResponse struct {
-	Message    *string               `json:"message,omitempty"`
-	ProductIds *[]openapi_types.UUID `json:"product_ids,omitempty"`
-}
-
 // CreateOrderRequest defines model for CreateOrderRequest.
 type CreateOrderRequest struct {
 	Items []OrderItem `json:"items"`

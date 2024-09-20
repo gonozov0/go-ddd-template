@@ -17,4 +17,6 @@ func main() {
 		slog.Error("Failed to migrate", "err", err)
 		os.Exit(1)
 	}
+
+	slog.Info("Migrations applied successfully")
 }

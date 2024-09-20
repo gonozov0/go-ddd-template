@@ -25,6 +25,11 @@ type orderDB struct {
 	Items  json.RawMessage    `db:"items"`
 }
 
+type productDB struct {
+	ID        uuid.UUID `db:"id"`
+	Available bool      `db:"available"`
+}
+
 type PostgresRepo struct {
 	cluster *hasql.Cluster
 }
@@ -93,4 +98,30 @@ func (r *PostgresRepo) GetOrder(ctx context.Context, id uuid.UUID) (*domain.Orde
 	}
 
 	return entity, nil
+}
+
+func (r *PostgresRepo) ReserveProducts(ctx context.Context, ids []uuid.UUID) error {
+	db := r.cluster.Primary().DBx()
+
+	query := `SELECT id, available FROM products WHERE id = ANY($1) FOR UPDATE`
+	var products []productDB
+	if err := db.SelectContext(ctx, &products, query, ids); err != nil {
+		return fmt.Errorf("failed to select products: %w", err)
+	}
+	if len(products) != len(ids) {
+		return fmt.Errorf("%w: selected %d products, expected %d", domain.ErrProductNotFound, len(products), len(ids))
+	}
+
+	for _, product := range products {
+		if !product.Available {
+			return fmt.Errorf("%w: id %s", domain.ErrProductAlreadyReserved, product.ID)
+		}
+	}
+
+	query = `UPDATE products SET available = false WHERE id = ANY($1)`
+	if _, err := db.ExecContext(ctx, query, ids); err != nil {
+		return fmt.Errorf("failed to update products' availability: %w", err)
+	}
+
+	return nil
 }

@@ -1,13 +1,7 @@
 package orders
 
 import (
-	"errors"
-
 	"github.com/google/uuid"
-)
-
-var (
-	ErrOrderNotFound = errors.New("order not found")
 )
 
 type Order struct {

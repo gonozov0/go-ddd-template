@@ -8,19 +8,17 @@ import (
 )
 
 var (
-	ErrProductNotFound        = errors.New("product not found")
-	ErrInvalidProduct         = errors.New("invalid product")
-	ErrProductAlreadyReserved = errors.New("product already reserved")
+	ErrProductNotFound = errors.New("product not found")
+	ErrInvalidProduct  = errors.New("invalid product")
 )
 
 type Product struct {
-	id        uuid.UUID
-	name      string
-	price     float64
-	available bool
+	id    uuid.UUID
+	name  string
+	price float64
 }
 
-func NewProduct(id uuid.UUID, name string, price float64, available bool) (*Product, error) {
+func NewProduct(id uuid.UUID, name string, price float64) (*Product, error) {
 	if err := validateProductName(name); err != nil {
 		return nil, err
 	}
@@ -29,15 +27,14 @@ func NewProduct(id uuid.UUID, name string, price float64, available bool) (*Prod
 	}
 
 	return &Product{
-		id:        id,
-		name:      name,
-		price:     price,
-		available: available,
+		id:    id,
+		name:  name,
+		price: price,
 	}, nil
 }
 
 func CreateProduct(name string, price float64) (*Product, error) {
-	return NewProduct(uuid.New(), name, price, true)
+	return NewProduct(uuid.New(), name, price)
 }
 
 func (p *Product) ID() uuid.UUID {
@@ -50,22 +47,6 @@ func (p *Product) Name() string {
 
 func (p *Product) Price() float64 {
 	return p.price
-}
-
-func (p *Product) Available() bool {
-	return p.available
-}
-
-func (p *Product) Reserve() error {
-	if !p.available {
-		return ErrProductAlreadyReserved
-	}
-	p.available = false
-	return nil
-}
-
-func (p *Product) CancelReservation() {
-	p.available = true
 }
 
 func validateProductName(name string) error {

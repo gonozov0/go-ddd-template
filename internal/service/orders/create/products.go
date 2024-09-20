@@ -2,39 +2,22 @@ package create
 
 import (
 	"context"
-	"errors"
+	"fmt"
 
 	"go-echo-template/internal/domain/products"
 
 	"github.com/google/uuid"
 )
 
-type ProductsAlreadyReservedError struct {
-	ProductIDs []uuid.UUID
-}
-
-func (e ProductsAlreadyReservedError) Error() string {
-	return "products already reserved"
-}
-
 func (s *OrderCreationService) reserveProducts(ctx context.Context, items []Item) ([]products.Product, error) {
-	ps, err := s.productRepo.GetProductsForUpdate(ctx, getItemIDs(items))
+	ids := getItemIDs(items)
+	ps, err := s.productRepo.GetProducts(ctx, ids)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get products: %w", err)
 	}
 
-	var reservedProductIDs []uuid.UUID
-	for _, product := range ps {
-		if err := product.Reserve(); err != nil {
-			if errors.Is(err, products.ErrProductAlreadyReserved) {
-				reservedProductIDs = append(reservedProductIDs, product.ID())
-				continue
-			}
-			return nil, err
-		}
-	}
-	if len(reservedProductIDs) > 0 {
-		return nil, ProductsAlreadyReservedError{ProductIDs: reservedProductIDs}
+	if err := s.orderRepo.ReserveProducts(ctx, ids); err != nil {
+		return nil, fmt.Errorf("failed to reserve products: %w", err)
 	}
 
 	return ps, nil

@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net/http"
 
+	ordersDomain "go-echo-template/internal/domain/orders"
+
 	"go-echo-template/generated/openapi"
 	"go-echo-template/generated/protobuf"
 	productsDomain "go-echo-template/internal/domain/products"
@@ -35,15 +37,8 @@ func (h OrderHandlers) PostOrders(c echo.Context) error {
 	order, err := ocs.CreateOrder(c.Request().Context(), c.Get("user_id").(uuid.UUID), items)
 	if err != nil {
 		msg := err.Error()
-		var reservedErr *service.ProductsAlreadyReservedError
-		if errors.As(err, reservedErr) {
-			return c.JSON(
-				http.StatusConflict,
-				openapi.ConflictOrderResponse{
-					Message:    &msg,
-					ProductIds: &reservedErr.ProductIDs, //nolint:govet // ProductIDs is not nil
-				},
-			)
+		if errors.Is(err, ordersDomain.ErrProductAlreadyReserved) {
+			return c.JSON(http.StatusConflict, openapi.ErrorResponse{Message: &msg})
 		}
 		if errors.Is(err, usersDomain.ErrUserNotFound) {
 			return c.JSON(http.StatusNotFound, openapi.ErrorResponse{Message: &msg})
@@ -76,9 +71,8 @@ func (h OrderHandlers) CreateOrder(
 	// TODO: implement authentication interceptor
 	order, err := ocs.CreateOrder(ctx, ctx.Value("user_id").(uuid.UUID), items)
 	if err != nil {
-		var reservedErr *service.ProductsAlreadyReservedError
-		if errors.As(err, &reservedErr) {
-			return nil, status.Errorf(codes.Aborted, "products already reserved: %v", reservedErr.ProductIDs)
+		if errors.Is(err, ordersDomain.ErrProductAlreadyReserved) {
+			return nil, status.Errorf(codes.Aborted, "product already reserved")
 		}
 		if errors.Is(err, usersDomain.ErrUserNotFound) {
 			return nil, status.Errorf(codes.NotFound, "user not found")
