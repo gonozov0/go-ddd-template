@@ -76,5 +76,6 @@ func (suite *RedisRepoSuite) TestGetUserNotFound() {
 }
 
 func TestRedisRepoSuite(t *testing.T) {
+	t.Parallel()
 	suite.Run(t, new(RedisRepoSuite))
 }

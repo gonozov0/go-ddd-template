@@ -17,7 +17,7 @@ type ServerSuite struct {
 	ProductsRepo *productsInfra.InMemoryRepo
 }
 
-func (s *ServerSuite) SetupSuite() {
+func (s *ServerSuite) SetupTest() {
 	s.UsersRepo = usersInfra.NewInMemoryRepo()
 	s.OrdersRepo = ordersInfra.NewInMemoryRepo()
 	s.ProductsRepo = productsInfra.NewInMemoryRepo()

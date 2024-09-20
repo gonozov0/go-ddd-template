@@ -40,7 +40,7 @@ func (s *UsersSuite) TestCreateUser() {
 			Name:  "John Doe",
 			Email: "john.doe@example.com",
 		}
-		resp, err := s.UserHandlers.CreateUser(context.Background(), &userReq)
+		resp, err := s.GRPCHandlers.CreateUser(context.Background(), &userReq)
 
 		s.Require().NoError(err)
 		s.Require().NotEqual("", resp.GetId())

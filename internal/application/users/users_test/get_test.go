@@ -34,7 +34,7 @@ func (s *UsersSuite) TestGetUser() {
 
 	s.Run("GRPC", func() {
 		req := &protobuf.GetUserRequest{Id: user.ID().String()}
-		resp, err := s.UserHandlers.GetUser(context.Background(), req)
+		resp, err := s.GRPCHandlers.GetUser(context.Background(), req)
 
 		s.Require().NoError(err)
 		s.Require().Equal(user.ID().String(), resp.GetId())
@@ -55,7 +55,7 @@ func (s *UsersSuite) TestGetUserNotFound() {
 
 	s.Run("GRPC", func() {
 		req := &protobuf.GetUserRequest{Id: uuid.New().String()}
-		_, err := s.UserHandlers.GetUser(context.Background(), req)
+		_, err := s.GRPCHandlers.GetUser(context.Background(), req)
 
 		s.Require().Error(err)
 		s.Require().Equal("rpc error: code = NotFound desc = user not found", err.Error())

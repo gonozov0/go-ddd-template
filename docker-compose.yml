@@ -12,6 +12,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+      POSTGRES_MAX_CONNECTIONS: 100
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
