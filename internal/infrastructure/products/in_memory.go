@@ -10,9 +10,8 @@ import (
 )
 
 type product struct {
-	Name      string
-	Price     float64
-	Available bool
+	Name  string
+	Price float64
 }
 
 type InMemoryRepo struct {
@@ -28,22 +27,21 @@ func NewInMemoryRepo() *InMemoryRepo {
 func (r *InMemoryRepo) SaveProducts(_ context.Context, ps []products.Product) error {
 	for _, p := range ps {
 		r.products[p.ID()] = product{
-			Name:      p.Name(),
-			Price:     p.Price(),
-			Available: p.Available(),
+			Name:  p.Name(),
+			Price: p.Price(),
 		}
 	}
 	return nil
 }
 
-func (r *InMemoryRepo) GetProductsForUpdate(_ context.Context, ids []uuid.UUID) ([]products.Product, error) {
+func (r *InMemoryRepo) GetProducts(_ context.Context, ids []uuid.UUID) ([]products.Product, error) {
 	ps := make([]products.Product, 0, len(ids))
 	for _, id := range ids {
 		p, ok := r.products[id]
 		if !ok {
 			return nil, fmt.Errorf("%w: id %s", products.ErrProductNotFound, id)
 		}
-		product, err := products.NewProduct(id, p.Name, p.Price, p.Available)
+		product, err := products.NewProduct(id, p.Name, p.Price)
 		if err != nil {
 			return nil, err
 		}

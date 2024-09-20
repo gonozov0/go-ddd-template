@@ -110,7 +110,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConflictOrderResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Internal server error.
           content:
@@ -169,16 +169,6 @@ components:
         id:
           type: string
           format: uuid
-    ConflictOrderResponse:
-      type: object
-      properties:
-        message:
-          type: string
-        product_ids:
-          type: array
-          items:
-            type: string
-            format: uuid
     ErrorResponse:
       type: object
       properties:

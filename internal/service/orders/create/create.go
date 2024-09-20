@@ -37,10 +37,6 @@ func (s *OrderCreationService) CreateOrder(ctx context.Context, userID uuid.UUID
 		return nil, err
 	}
 
-	if err = s.productRepo.SaveProducts(ctx, ps); err != nil {
-		return nil, err
-	}
-
 	return order, nil
 }
 

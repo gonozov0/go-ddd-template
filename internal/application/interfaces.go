@@ -18,9 +18,9 @@ type UserRepository interface {
 type OrderRepository interface {
 	SaveOrder(ctx context.Context, o *ordersDomain.Order) error
 	GetOrder(ctx context.Context, id uuid.UUID) (*ordersDomain.Order, error)
+	ReserveProducts(ctx context.Context, ids []uuid.UUID) error
 }
 
 type ProductRepository interface {
-	GetProductsForUpdate(ctx context.Context, ids []uuid.UUID) ([]productsDomain.Product, error)
-	SaveProducts(ctx context.Context, ps []productsDomain.Product) error
+	GetProducts(ctx context.Context, ids []uuid.UUID) ([]productsDomain.Product, error)
 }

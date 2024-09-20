@@ -10,27 +10,27 @@ import (
 	"github.com/google/uuid"
 )
 
-type orderRepo interface {
+type OrderRepository interface {
 	SaveOrder(ctx context.Context, o *orders.Order) error
 	GetOrder(ctx context.Context, id uuid.UUID) (*orders.Order, error)
+	ReserveProducts(ctx context.Context, ids []uuid.UUID) error
 }
 
-type userRepo interface {
+type UserRepository interface {
 	GetUser(ctx context.Context, id uuid.UUID) (*users.User, error)
 }
 
-type productRepo interface {
-	GetProductsForUpdate(ctx context.Context, ids []uuid.UUID) ([]products.Product, error)
-	SaveProducts(ctx context.Context, ps []products.Product) error
+type ProductRepository interface {
+	GetProducts(ctx context.Context, ids []uuid.UUID) ([]products.Product, error)
 }
 
 type OrderCreationService struct {
-	orderRepo   orderRepo
-	userRepo    userRepo
-	productRepo productRepo
+	orderRepo   OrderRepository
+	userRepo    UserRepository
+	productRepo ProductRepository
 }
 
-func NewOrderCreationService(or orderRepo, ur userRepo, pr productRepo) *OrderCreationService {
+func NewOrderCreationService(or OrderRepository, ur UserRepository, pr ProductRepository) *OrderCreationService {
 	return &OrderCreationService{
 		orderRepo:   or,
 		userRepo:    ur,

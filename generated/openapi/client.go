@@ -341,7 +341,7 @@ type PostOrdersResponse struct {
 	JSON201      *CreateOrderResponse
 	JSON400      *ErrorResponse
 	JSON404      *ErrorResponse
-	JSON409      *ConflictOrderResponse
+	JSON409      *ErrorResponse
 	JSON500      *ErrorResponse
 }
 
@@ -489,7 +489,7 @@ func ParsePostOrdersResponse(rsp *http.Response) (*PostOrdersResponse, error) {
 		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
-		var dest ConflictOrderResponse
+		var dest ErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

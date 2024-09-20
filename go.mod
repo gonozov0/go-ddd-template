@@ -1,8 +1,6 @@
 module go-echo-template
 
-go 1.22.0
-
-toolchain go1.22.5
+go 1.23
 
 require (
 	github.com/getkin/kin-openapi v0.127.0
@@ -11,7 +9,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.1
-	github.com/jmoiron/sqlx v1.3.5
+	github.com/jmoiron/sqlx v1.4.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/levigross/grequests v0.0.0-20231203190023-9c307ef1f48d
 	github.com/oapi-codegen/runtime v1.1.1
