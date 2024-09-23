@@ -36,11 +36,12 @@ goenv global 1.x.x
 
 Чтобы настроить конкретную версию `Go` для проекта в IDE (например GoLand), выберите в качестве `GOROOT` нужную версию в директории `~/.goenv/versions`
 
-### Линтеры
+### Линтеры и кодогенерация
 
 Для запуска `make lint` и `go generate ./...` необходимо установить следующие утилиты:
 
 ```sh
+brew install protobuf
 go install golang.org/x/tools/cmd/goimports@latest
 go install github.com/segmentio/golines@latest
 go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
@@ -62,8 +63,25 @@ pre-commit install
 
 ### Golang-migrate
 
-TODO
+Для выполнения миграций базы данных используется утилита `golang-migrate`.
+Чтобы установить утилиту, выполните команду:
 
 ```shell
 brew install golang-migrate
+```
+
+Чтобы применить миграции к базе, существует make команда:
+
+```shell
+make migrate_up
+```
+
+Также для отката миграций (параметр `count` указывает количество миграций, которые нужно откатить):
+```shell
+make migrate_down count=1
+```
+
+Для создания новой миграции используйте команду:
+```shell
+make create_migration name=migration_name
 ```

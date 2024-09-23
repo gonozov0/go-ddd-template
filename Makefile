@@ -7,6 +7,7 @@ help:
 	cat Makefile
 
 install:
+	brew install protobuf
 	go install golang.org/x/tools/cmd/goimports@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go install github.com/segmentio/golines@latest
@@ -27,7 +28,7 @@ lint:
 	find . -name '*.go' ! -path "./generated/*" -exec goimports -local go-echo-template/ -w {} +
 	find . -name '*.go' ! -path "./generated/*" -exec golines -w {} -m 120 \;
 	golangci-lint run ./...
-
+	./check-go-generate.sh
 
 coverage_report:
 	# TODO: fix test execution in 1 thread
