@@ -20,7 +20,13 @@ jobs:
         with:
           go-version: 1.23.1
 
-      - name: Install dependencies
+      - name: Install protoc
+        run: |
+          curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v28.1/protoc-28.1-linux-x86_64.zip
+          unzip protoc-28.1-linux-x86_64.zip -d $HOME/protoc
+          echo "$HOME/protoc/bin" >> $GITHUB_PATH
+
+      - name: Install other dependencies
         run: |
           go install golang.org/x/tools/cmd/goimports@latest
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
