@@ -37,8 +37,8 @@ func (s *UsersSuite) TestCreateUser() {
 
 	s.Run("GRPC", func() {
 		userReq := protobuf.CreateUserRequest{
-			Name:  "John Doe",
-			Email: "john.doe@example.com",
+			Name:  "John Lee",
+			Email: "john.lee@example.com",
 		}
 		resp, err := s.GRPCHandlers.CreateUser(context.Background(), &userReq)
 

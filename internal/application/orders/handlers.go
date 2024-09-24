@@ -2,7 +2,7 @@ package orders
 
 import (
 	"go-echo-template/generated/protobuf"
-	service "go-echo-template/internal/service/orders/create"
+	service "go-echo-template/internal/service/orders"
 )
 
 type OrderHandlers struct {

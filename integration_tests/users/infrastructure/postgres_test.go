@@ -42,20 +42,20 @@ func (suite *PostgresRepoSuite) SetupSuite() {
 }
 
 func (suite *PostgresRepoSuite) TestUserCRUD() {
-	created, err := domain.CreateUser("test", "test@test.com")
-	suite.Require().NoError(err)
-
-	err = suite.repo.SaveUser(context.Background(), *created)
+	email := "test@test.com"
+	created, err := suite.repo.CreateUser(context.Background(), email, func() (*domain.User, error) {
+		return domain.CreateUser("test", email)
+	})
 	suite.Require().NoError(err)
 
 	gotten, err := suite.repo.GetUser(context.Background(), created.ID())
 	suite.Require().NoError(err)
 	suite.Require().Equal(created, gotten)
 
-	updated, err := domain.NewUser(created.ID(), "test2", "test@test2.com")
-	suite.Require().NoError(err)
-
-	err = suite.repo.SaveUser(context.Background(), *updated)
+	updated, err := suite.repo.UpdateUser(context.Background(), created.ID(), func(u *domain.User) (bool, error) {
+		err := u.ChangeEmail("test@test2.com")
+		return true, err
+	})
 	suite.Require().NoError(err)
 
 	gotten, err = suite.repo.GetUser(context.Background(), created.ID())

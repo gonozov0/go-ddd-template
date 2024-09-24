@@ -10,7 +10,8 @@ import (
 )
 
 type Repository interface {
-	SaveUser(ctx context.Context, u users.User) error
+	CreateUser(ctx context.Context, email string, createFn func() (*users.User, error)) (*users.User, error)
+	UpdateUser(ctx context.Context, id uuid.UUID, updateFn func(*users.User) (bool, error)) (*users.User, error)
 	GetUser(ctx context.Context, id uuid.UUID) (*users.User, error)
 }
 

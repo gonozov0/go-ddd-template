@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/jmoiron/sqlx"
+
+	"go-echo-template/pkg/postgres"
+
 	hasql "golang.yandex/hasql/sqlx"
 
 	domain "go-echo-template/internal/domain/orders"
@@ -40,39 +44,77 @@ func NewPostgresRepo(cluster *hasql.Cluster) *PostgresRepo {
 	}
 }
 
-func (r *PostgresRepo) SaveOrder(ctx context.Context, entity *domain.Order) error {
+func (r *PostgresRepo) CreateOrder(
+	ctx context.Context,
+	itemIDs []uuid.UUID,
+	createFn func() (*domain.Order, error),
+) (*domain.Order, error) {
 	db := r.cluster.Primary().DBx()
 
-	items := make([]itemDB, 0, len(entity.Items()))
-	for _, item := range entity.Items() {
-		items = append(items, itemDB{
-			ID:    item.ID(),
-			Name:  item.Name(),
-			Price: item.Price(),
-		})
+	var order *domain.Order
+	err := postgres.RunInTx(ctx, db, func(tx *sqlx.Tx) error {
+		err := r.reserveProducts(ctx, tx, itemIDs)
+		if err != nil {
+			return fmt.Errorf("failed to reserve products: %w", err)
+		}
+
+		order, err = createFn()
+		if err != nil {
+			return fmt.Errorf("failed to create order: %w", err)
+		}
+
+		items := make([]itemDB, 0, len(order.Items()))
+		for _, item := range order.Items() {
+			items = append(items, itemDB{
+				ID:    item.ID(),
+				Name:  item.Name(),
+				Price: item.Price(),
+			})
+		}
+		itemsJSON, err := json.Marshal(items)
+		if err != nil {
+			return fmt.Errorf("failed to marshal items: %w", err)
+		}
+		orderDB := orderDB{
+			ID:     order.ID(),
+			UserID: order.UserID(),
+			Status: order.Status(),
+			Items:  itemsJSON,
+		}
+
+		query := `
+			INSERT INTO orders (id, user_id, status, items)
+			VALUES (:id, :user_id, :status, :items)
+		`
+		_, err = db.NamedExecContext(ctx, query, orderDB)
+		if err != nil {
+			return fmt.Errorf("failed to execute query: %w", err)
+		}
+
+		return nil
+	})
+	return order, err
+}
+
+func (r *PostgresRepo) reserveProducts(ctx context.Context, tx *sqlx.Tx, ids []uuid.UUID) error {
+	query := `SELECT id, available FROM products WHERE id = ANY($1) FOR UPDATE`
+	var products []productDB
+	if err := tx.SelectContext(ctx, &products, query, ids); err != nil {
+		return fmt.Errorf("failed to select products: %w", err)
 	}
-	itemsJSON, err := json.Marshal(items)
-	if err != nil {
-		return fmt.Errorf("failed to marshal items: %w", err)
-	}
-	order := orderDB{
-		ID:     entity.ID(),
-		UserID: entity.UserID(),
-		Status: entity.Status(),
-		Items:  itemsJSON,
+	if len(products) != len(ids) {
+		return fmt.Errorf("%w: selected %d products, expected %d", domain.ErrProductNotFound, len(products), len(ids))
 	}
 
-	query := `
-		INSERT INTO orders (id, user_id, status, items)
-		VALUES (:id, :user_id, :status, :items)
-		ON CONFLICT (id) DO UPDATE SET
-		user_id = excluded.user_id,
-		status = excluded.status,
-		items = excluded.items
-	`
-	_, err = db.NamedExecContext(ctx, query, order)
-	if err != nil {
-		return fmt.Errorf("failed to execute query: %w", err)
+	for _, product := range products {
+		if !product.Available {
+			return fmt.Errorf("%w: id %s", domain.ErrProductAlreadyReserved, product.ID)
+		}
+	}
+
+	query = `UPDATE products SET available = false WHERE id = ANY($1)`
+	if _, err := tx.ExecContext(ctx, query, ids); err != nil {
+		return fmt.Errorf("failed to update products' availability: %w", err)
 	}
 
 	return nil
@@ -98,30 +140,4 @@ func (r *PostgresRepo) GetOrder(ctx context.Context, id uuid.UUID) (*domain.Orde
 	}
 
 	return entity, nil
-}
-
-func (r *PostgresRepo) ReserveProducts(ctx context.Context, ids []uuid.UUID) error {
-	db := r.cluster.Primary().DBx()
-
-	query := `SELECT id, available FROM products WHERE id = ANY($1) FOR UPDATE`
-	var products []productDB
-	if err := db.SelectContext(ctx, &products, query, ids); err != nil {
-		return fmt.Errorf("failed to select products: %w", err)
-	}
-	if len(products) != len(ids) {
-		return fmt.Errorf("%w: selected %d products, expected %d", domain.ErrProductNotFound, len(products), len(ids))
-	}
-
-	for _, product := range products {
-		if !product.Available {
-			return fmt.Errorf("%w: id %s", domain.ErrProductAlreadyReserved, product.ID)
-		}
-	}
-
-	query = `UPDATE products SET available = false WHERE id = ANY($1)`
-	if _, err := db.ExecContext(ctx, query, ids); err != nil {
-		return fmt.Errorf("failed to update products' availability: %w", err)
-	}
-
-	return nil
 }

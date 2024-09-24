@@ -3,24 +3,24 @@ package application
 import (
 	"context"
 
-	ordersDomain "go-echo-template/internal/domain/orders"
-	productsDomain "go-echo-template/internal/domain/products"
-	usersDomain "go-echo-template/internal/domain/users"
+	"go-echo-template/internal/domain/orders"
+	"go-echo-template/internal/domain/products"
+	"go-echo-template/internal/domain/users"
 
 	"github.com/google/uuid"
 )
 
 type UserRepository interface {
-	GetUser(ctx context.Context, id uuid.UUID) (*usersDomain.User, error)
-	SaveUser(ctx context.Context, u usersDomain.User) error
+	CreateUser(ctx context.Context, email string, createFn func() (*users.User, error)) (*users.User, error)
+	UpdateUser(ctx context.Context, id uuid.UUID, updateFn func(*users.User) (bool, error)) (*users.User, error)
+	GetUser(ctx context.Context, id uuid.UUID) (*users.User, error)
 }
 
 type OrderRepository interface {
-	SaveOrder(ctx context.Context, o *ordersDomain.Order) error
-	GetOrder(ctx context.Context, id uuid.UUID) (*ordersDomain.Order, error)
-	ReserveProducts(ctx context.Context, ids []uuid.UUID) error
+	CreateOrder(ctx context.Context, itemIDs []uuid.UUID, createFn func() (*orders.Order, error)) (*orders.Order, error)
+	GetOrder(ctx context.Context, id uuid.UUID) (*orders.Order, error)
 }
 
 type ProductRepository interface {
-	GetProducts(ctx context.Context, ids []uuid.UUID) ([]productsDomain.Product, error)
+	GetProducts(ctx context.Context, ids []uuid.UUID) ([]products.Product, error)
 }

@@ -8,9 +8,10 @@ import (
 )
 
 var (
-	ErrUserNotFound   = errors.New("user not found")
-	ErrInvalidUser    = errors.New("invalid user")
-	ErrUserValidation = errors.New("validation error")
+	ErrUserNotFound     = errors.New("user not found")
+	ErrInvalidUser      = errors.New("invalid user")
+	ErrUserValidation   = errors.New("validation error")
+	ErrUserAlreadyExist = errors.New("user already exist")
 )
 
 type User struct {
@@ -52,6 +53,14 @@ func (u *User) Email() string {
 
 func (u *User) SendToEmail(_ string) error {
 	return errors.New("not implemented")
+}
+
+func (u *User) ChangeEmail(email string) error {
+	if err := validateEmail(email); err != nil {
+		return err
+	}
+	u.email = email
+	return nil
 }
 
 func validateUsername(username string) error {
