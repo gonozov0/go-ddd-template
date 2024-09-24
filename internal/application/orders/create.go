@@ -5,18 +5,19 @@ import (
 	"errors"
 	"net/http"
 
-	ordersDomain "go-echo-template/internal/domain/orders"
+	ordersService "go-echo-template/internal/service/orders"
 
-	"go-echo-template/generated/openapi"
-	"go-echo-template/generated/protobuf"
-	productsDomain "go-echo-template/internal/domain/products"
-	usersDomain "go-echo-template/internal/domain/users"
-	service "go-echo-template/internal/service/orders/create"
+	ordersDomain "go-echo-template/internal/domain/orders"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"go-echo-template/generated/openapi"
+	"go-echo-template/generated/protobuf"
+	productsDomain "go-echo-template/internal/domain/products"
+	usersDomain "go-echo-template/internal/domain/users"
 )
 
 func (h OrderHandlers) PostOrders(c echo.Context) error {
@@ -25,16 +26,16 @@ func (h OrderHandlers) PostOrders(c echo.Context) error {
 		return err
 	}
 
-	items := make([]service.Item, 0, len(req.Items))
+	items := make([]ordersService.Item, 0, len(req.Items))
 	for _, i := range req.Items {
-		items = append(items, service.Item{
+		items = append(items, ordersService.Item{
 			ID: *i.Id,
 		})
 	}
 
-	ocs := service.NewOrderCreationService(h.orderRepo, h.userRepo, h.productRepo)
+	service := ordersService.NewOrderCreationService(h.orderRepo, h.userRepo, h.productRepo)
 	// TODO: implement authentication interceptor
-	order, err := ocs.CreateOrder(c.Request().Context(), c.Get("user_id").(uuid.UUID), items)
+	order, err := service.CreateOrder(c.Request().Context(), c.Get("user_id").(uuid.UUID), items)
 	if err != nil {
 		msg := err.Error()
 		if errors.Is(err, ordersDomain.ErrProductAlreadyReserved) {
@@ -56,20 +57,20 @@ func (h OrderHandlers) CreateOrder(
 	ctx context.Context,
 	req *protobuf.CreateOrderRequest,
 ) (*protobuf.CreateOrderResponse, error) {
-	items := make([]service.Item, 0, len(req.GetItems()))
+	items := make([]ordersService.Item, 0, len(req.GetItems()))
 	for _, i := range req.GetItems() {
 		uid, err := uuid.Parse(i.GetId())
 		if err != nil {
 			return nil, status.Errorf(codes.InvalidArgument, "invalid UUID: %s", i.GetId())
 		}
-		items = append(items, service.Item{
+		items = append(items, ordersService.Item{
 			ID: uid,
 		})
 	}
 
-	ocs := service.NewOrderCreationService(h.orderRepo, h.userRepo, h.productRepo)
+	service := ordersService.NewOrderCreationService(h.orderRepo, h.userRepo, h.productRepo)
 	// TODO: implement authentication interceptor
-	order, err := ocs.CreateOrder(ctx, ctx.Value("user_id").(uuid.UUID), items)
+	order, err := service.CreateOrder(ctx, ctx.Value("user_id").(uuid.UUID), items)
 	if err != nil {
 		if errors.Is(err, ordersDomain.ErrProductAlreadyReserved) {
 			return nil, status.Errorf(codes.Aborted, "product already reserved")

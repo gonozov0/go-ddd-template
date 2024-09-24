@@ -1,4 +1,4 @@
-package create
+package orders
 
 import (
 	"context"
@@ -11,9 +11,8 @@ import (
 )
 
 type OrderRepository interface {
-	SaveOrder(ctx context.Context, o *orders.Order) error
+	CreateOrder(ctx context.Context, itemIDs []uuid.UUID, createFn func() (*orders.Order, error)) (*orders.Order, error)
 	GetOrder(ctx context.Context, id uuid.UUID) (*orders.Order, error)
-	ReserveProducts(ctx context.Context, ids []uuid.UUID) error
 }
 
 type UserRepository interface {

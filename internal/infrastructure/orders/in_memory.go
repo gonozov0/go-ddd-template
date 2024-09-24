@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"go-echo-template/internal/domain/orders"
+	domain "go-echo-template/internal/domain/orders"
 
 	"github.com/google/uuid"
 )
@@ -15,54 +15,53 @@ type product struct {
 
 type order struct {
 	UserID uuid.UUID
-	Status orders.OrderStatus
-	Items  []orders.Item
+	Status domain.OrderStatus
+	Items  []domain.Item
 }
 
 type InMemoryRepo struct {
-	orders   map[uuid.UUID]order
+	domain   map[uuid.UUID]order
 	products map[uuid.UUID]product
 }
 
 func NewInMemoryRepo() *InMemoryRepo {
 	return &InMemoryRepo{
-		orders:   make(map[uuid.UUID]order),
+		domain:   make(map[uuid.UUID]order),
 		products: make(map[uuid.UUID]product),
 	}
 }
 
-func (r *InMemoryRepo) SaveOrder(_ context.Context, o *orders.Order) error {
-	r.orders[o.ID()] = order{
-		UserID: o.UserID(),
-		Status: o.Status(),
-		Items:  o.Items(),
+func (r *InMemoryRepo) CreateOrder(
+	_ context.Context,
+	itemIDs []uuid.UUID,
+	createFn func() (*domain.Order, error),
+) (*domain.Order, error) {
+	if err := r.reserveProducts(itemIDs); err != nil {
+		return nil, fmt.Errorf("failed to reserve products: %w", err)
 	}
 
-	return nil
-}
-
-func (r *InMemoryRepo) GetOrder(_ context.Context, id uuid.UUID) (*orders.Order, error) {
-	o, ok := r.orders[id]
-	if !ok {
-		return nil, orders.ErrOrderNotFound
-	}
-
-	order, err := orders.NewOrder(id, o.UserID, o.Status, o.Items)
+	entity, err := createFn()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create order: %w", err)
 	}
 
-	return order, nil
+	r.domain[entity.ID()] = order{
+		UserID: entity.UserID(),
+		Status: entity.Status(),
+		Items:  entity.Items(),
+	}
+
+	return entity, nil
 }
 
-func (r *InMemoryRepo) ReserveProducts(_ context.Context, ids []uuid.UUID) error {
+func (r *InMemoryRepo) reserveProducts(ids []uuid.UUID) error {
 	for _, id := range ids {
 		p, ok := r.products[id]
 		if !ok {
-			return fmt.Errorf("%w: id %s", orders.ErrProductNotFound, id)
+			return fmt.Errorf("%w: id %s", domain.ErrProductNotFound, id)
 		}
 		if !p.Available {
-			return fmt.Errorf("%w: id %s", orders.ErrProductAlreadyReserved, id)
+			return fmt.Errorf("%w: id %s", domain.ErrProductAlreadyReserved, id)
 		}
 		r.products[id] = product{
 			Available: false,
@@ -70,4 +69,18 @@ func (r *InMemoryRepo) ReserveProducts(_ context.Context, ids []uuid.UUID) error
 	}
 
 	return nil
+}
+
+func (r *InMemoryRepo) GetOrder(_ context.Context, id uuid.UUID) (*domain.Order, error) {
+	o, ok := r.domain[id]
+	if !ok {
+		return nil, domain.ErrOrderNotFound
+	}
+
+	order, err := domain.NewOrder(id, o.UserID, o.Status, o.Items)
+	if err != nil {
+		return nil, err
+	}
+
+	return order, nil
 }

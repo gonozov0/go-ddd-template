@@ -1,8 +1,9 @@
-package apisuite
+package suites
 
 import (
 	"log/slog"
 	"os"
+	"sync"
 	"time"
 
 	"go-echo-template/internal"
@@ -16,14 +17,15 @@ const (
 	waitServerTimeout = 2 * time.Second
 )
 
-type APITestSuite struct {
+type RunServerSuite struct {
 	suite.Suite
 	HTTPServerURL string
 	GRPCServerURL string
 	Conn          *grpc.ClientConn
+	wg            sync.WaitGroup
 }
 
-func (suite *APITestSuite) SetupSuite(port string) {
+func (suite *RunServerSuite) SetupSuite(port string) {
 	cfg, err := internal.LoadConfig()
 	if err != nil {
 		suite.Fail("Failed to load config", err)
@@ -34,7 +36,9 @@ func (suite *APITestSuite) SetupSuite(port string) {
 	suite.GRPCServerURL = "localhost:" + port
 	suite.HTTPServerURL = "http://" + suite.GRPCServerURL
 
+	suite.wg.Add(1)
 	go func() {
+		defer suite.wg.Done()
 		err := internal.Run(cfg)
 		if err != nil {
 			slog.Error("Failed to run server", "err", err)
@@ -53,7 +57,7 @@ func (suite *APITestSuite) SetupSuite(port string) {
 	}
 }
 
-func (suite *APITestSuite) TearDownSuite() {
+func (suite *RunServerSuite) TearDownSuite() {
 	if suite.Conn != nil {
 		suite.Conn.Close()
 	}
@@ -68,5 +72,5 @@ func (suite *APITestSuite) TearDownSuite() {
 		suite.Fail("Failed to send interrupt signal", err)
 	}
 
-	time.Sleep(waitServerTimeout)
+	suite.wg.Wait()
 }

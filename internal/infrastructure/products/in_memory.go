@@ -24,7 +24,11 @@ func NewInMemoryRepo() *InMemoryRepo {
 	}
 }
 
-func (r *InMemoryRepo) SaveProducts(_ context.Context, ps []products.Product) error {
+func (r *InMemoryRepo) CreateProducts(_ context.Context, createFn func() ([]products.Product, error)) error {
+	ps, err := createFn()
+	if err != nil {
+		return fmt.Errorf("failed to create products: %w", err)
+	}
 	for _, p := range ps {
 		r.products[p.ID()] = product{
 			Name:  p.Name(),

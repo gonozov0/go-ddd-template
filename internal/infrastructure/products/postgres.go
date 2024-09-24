@@ -4,9 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jmoiron/sqlx"
+
 	hasql "golang.yandex/hasql/sqlx"
 
 	domain "go-echo-template/internal/domain/products"
+	"go-echo-template/pkg/postgres"
 
 	"github.com/google/uuid"
 )
@@ -27,38 +30,36 @@ func NewPostgresRepo(cluster *hasql.Cluster) *PostgresRepo {
 	}
 }
 
-func (r *PostgresRepo) SaveProducts(ctx context.Context, ps []domain.Product) error {
+func (r *PostgresRepo) CreateProducts(ctx context.Context, createFn func() ([]domain.Product, error)) error {
 	db := r.cluster.Primary().DBx()
-	tx, err := db.BeginTxx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("failed to start transaction: %w", err)
-	}
-	defer tx.Rollback() //nolint:errcheck // Handling rollback error is not necessary
-
-	stmt, err := tx.PreparexContext(ctx, `
-        INSERT INTO products (id, name, price)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (id) DO UPDATE SET
-        name = excluded.name,
-        price = excluded.price
-    `)
-	if err != nil {
-		return fmt.Errorf("failed to prepare statement: %w", err)
-	}
-	defer stmt.Close()
-
-	for _, p := range ps {
-		_, err = stmt.ExecContext(ctx, p.ID(), p.Name(), p.Price())
+	return postgres.RunInTx(ctx, db, func(tx *sqlx.Tx) error {
+		ps, err := createFn()
 		if err != nil {
-			return fmt.Errorf("failed to execute statement: %w", err)
+			return fmt.Errorf("failed to create products: %w", err)
 		}
-	}
 
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
-	}
+		//nolint:sqlclosecheck // Linter bug because of RunInTx, it's closing the statement in defer
+		stmt, err := tx.PreparexContext(ctx, `
+			INSERT INTO products (id, name, price)
+			VALUES ($1, $2, $3)
+			ON CONFLICT (id) DO UPDATE SET
+			name = excluded.name,
+			price = excluded.price
+		`)
+		if err != nil {
+			return fmt.Errorf("failed to prepare statement: %w", err)
+		}
+		defer stmt.Close()
 
-	return nil
+		for _, p := range ps {
+			_, err = stmt.ExecContext(ctx, p.ID(), p.Name(), p.Price())
+			if err != nil {
+				return fmt.Errorf("failed to execute statement: %w", err)
+			}
+		}
+
+		return nil
+	})
 }
 
 func (r *PostgresRepo) GetProducts(ctx context.Context, id []uuid.UUID) ([]domain.Product, error) {
