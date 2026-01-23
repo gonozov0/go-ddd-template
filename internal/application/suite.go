@@ -1,25 +1,43 @@
 package application
 
 import (
-	ordersInfra "go-echo-template/internal/infrastructure/orders"
-	productsInfra "go-echo-template/internal/infrastructure/products"
-	usersInfra "go-echo-template/internal/infrastructure/users"
+	"context"
 
-	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
+
+	"go-ddd-template/internal/domain/shared/valueobjects"
+	"go-ddd-template/pkg/auth"
+	"go-ddd-template/pkg/auth/tests"
+
+	deliveriesinfra "go-ddd-template/internal/infrastructure/deliveries"
+	ordersinfra "go-ddd-template/internal/infrastructure/orders"
+	productsinfra "go-ddd-template/internal/infrastructure/products"
+	usersinfra "go-ddd-template/internal/infrastructure/users"
+	imagestorage "go-ddd-template/pkg/image_storage"
 )
 
 type ServerSuite struct {
 	suite.Suite
-	HTTPServer   *echo.Echo
-	UsersRepo    *usersInfra.InMemoryRepo
-	OrdersRepo   *ordersInfra.InMemoryRepo
-	ProductsRepo *productsInfra.InMemoryRepo
+
+	UserID   valueobjects.UserID
+	UserCtx  context.Context
+	AdminCtx context.Context
+
+	UsersRepo      *usersinfra.InMemoryRepo
+	OrdersRepo     *ordersinfra.InMemoryRepo
+	ProductsRepo   *productsinfra.InMemoryRepo
+	DeliveriesRepo *deliveriesinfra.InMemoryRepo
+	ImageStorage   *imagestorage.InMemoryClient
 }
 
 func (s *ServerSuite) SetupTest() {
-	s.UsersRepo = usersInfra.NewInMemoryRepo()
-	s.OrdersRepo = ordersInfra.NewInMemoryRepo()
-	s.ProductsRepo = productsInfra.NewInMemoryRepo()
-	s.HTTPServer = SetupHTTPServer(s.UsersRepo, s.OrdersRepo, s.ProductsRepo)
+	s.UserID = valueobjects.UserID(tests.UserID)
+	s.UserCtx = auth.WithUserInfo(context.Background(), auth.NewUserInfo(tests.UserID))
+	s.AdminCtx = auth.WithUserInfo(context.Background(), auth.NewUserInfo(tests.AdminUserID))
+
+	s.UsersRepo = usersinfra.NewInMemoryRepo()
+	s.OrdersRepo = ordersinfra.NewInMemoryRepo()
+	s.ProductsRepo = productsinfra.NewInMemoryRepo()
+	s.DeliveriesRepo = deliveriesinfra.NewInMemoryRepo()
+	s.ImageStorage = imagestorage.NewInMemoryClient(context.Background())
 }

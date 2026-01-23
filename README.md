@@ -1,8 +1,16 @@
-# go-echo-template
+# Go DDD Template
 
-The project is a template for Go repositories using the Echo framework.
-Contains examples of the code structure for a project with a domain-driven design (DDD) approach.
+Данный проект - это шаблон для быстрого и удобного запуска новых проектов на Go
+с применением тактических паттернов Domain Driven Design
 
+Он включает в себя:
+- grpc и http сервер из коробки с graceful shutdown
+- реализацию клиентов:
+  - к postgres, умеющую переживать смену мастера
+  - к sqs и ydb topics (аналог kafka) для асинхронных операций
+  - к redis
+  - к s3
+- примеры организации архитектуры кода и тестов по DDD (domain driven design)
 
 ## Настойка dev окружения
 
@@ -38,19 +46,11 @@ goenv global 1.x.x
 
 ### Линтеры и кодогенерация
 
-Для запуска `make lint` и `go generate ./...` необходимо установить следующие утилиты:
+Для запуска `make lint` и генерации кода по proto файлам необходимо выполнить команду:
 
 ```sh
-brew install protobuf
-go install golang.org/x/tools/cmd/goimports@latest
-go install github.com/segmentio/golines@latest
-go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+make install_on_mac
 ```
-
-либо просто выполнить команду `make install`
 
 ### Pre-commit hooks
 
@@ -61,27 +61,102 @@ brew install pre-commit
 pre-commit install
 ```
 
-### Golang-migrate
+### Написание тестов
 
-Для выполнения миграций базы данных используется утилита `golang-migrate`.
-Чтобы установить утилиту, выполните команду:
+В проекте используется два типа тестов: модульные (unit) и интеграционные.
 
+#### Модульные тесты
+
+Модульные тесты проверяют бизнес-логику на уровне application слоя для каждого способа взаимодействия (HTTP/gRPC серверы, cron, consumers). Все внешние зависимости заменяются моками (in-memory реализациями), middleware не тестируется.
+
+**Вспомогательные функции для тестов(хелперы)** (в директории `shared/helpers/`):
+
+- **generate.go** — создание доменных объектов с использованием паттерна functional options. Без опций создаются объекты со случайными данными.
+- **create.go** — упрощенное создание объектов в хранилище.
+- **convert.go** — преобразование доменных объектов в структуры для application слоя.
+
+**Рекомендация**: передавайте suite в хелперы для выполнения проверок внутри них. Используйте алиас при импорте: `<aggregat_name>unithelper` (например, `orderunithelpers`).
+
+#### Интеграционные тесты
+
+Интеграционные тесты проверяют работу полностью развернутого сервиса. **Важно**: нельзя обращаться напрямую к внешним системам (БД и т.д.) из этих тестов, так как они выполняются в sandbox без сетевого доступа к внешним подсистемам.
+
+Для каждого агрегата в директории `helpers/` реализуется вспомогательный suite для управления тестовыми объектами.
+
+В интеграционных тестах **не нужно** реализовывать структуры для взаидоействия по http, необходимо использовать сгенерированные структуры из прото (они имеют json теги). Но для корректной работы Marshal/Unmarshal операций необходимо использовать функции из пакета `grpcutils`
+
+### Запуск
+
+Для локального запуска необходимо будет поднять postgres и ydb через docker.
+Из разрешенного софта для использования докер локально лучшим выбором будет Podman desktop ([инструкция для mac](https://wiki.yandex-team.ru/users/miglitskii/kak-perevesti-lokalnuju-installjaciju-kory-s-docke/)).
+Для корректной работы YDB при локальном тестировании необходимо увеличить ресурсы Podman до 8 ЦПУ
+
+После установки поднимаем postgres и ydb:
 ```shell
-brew install golang-migrate
+docker-compose up -d
 ```
 
-Чтобы применить миграции к базе, существует make команда:
+Далее можно запускать, как мигратор, так и сам сервер:
+```shell
+go run ./cmd/migrator
+go run ./cmd/server
+```
+
+>Если при запуске приложения или тестов компилятор выдает ошибку в сваггере, удалите из папки ```proto/server``` все файлы, кроме ```protobuf.proto``` и ```ya.make```
+>И выполните заново кодогенерацию
+>```shell
+>make protogen
+>```
+>Также кодогенерацию необходимо выполнять после каждого монтирования аркадии.
+
+После запуска севера можно глянуть swagger на [localhost:8080/swagger](http://localhost:8080/swagger/)
+
+### Миграции
+
+Для выполнения миграций базы данных используется либа `goose`.
+Кроме самого мигратора можно установить утилиту:
 
 ```shell
-make migrate_up
+brew install goose
+```
+
+Чтобы применить миграции к базе через нее, существует make команда:
+
+```shell
+make postgres_migrate_up
 ```
 
 Также для отката миграций (параметр `count` указывает количество миграций, которые нужно откатить):
 ```shell
-make migrate_down count=1
+make postgres_migrate_down count=1
 ```
 
-Для создания новой миграции используйте команду:
+Но основной юзкейс использования этой утилиты - это создание новых миграции:
 ```shell
-make create_migration name=migration_name
+make postgres_create_migration name=migration_name
 ```
+
+## Архитектура кода
+
+DDD (Domain driven design) - это подход к разработке, который позволяет контролировать рост сложности в наших проектах
+и не позволять им превращаться в большой комок грязи (big ball of mud) без возможности дальнейшей поддержки
+
+DDD дает некий оверхед на старте проекта за счет разделения кода на слои
+и выделения в нем агрегатов (границ в коде со своей четкой зоной ответственности).
+Но в долгосроке это сильно окупается за счет отсутствия роста техдолга
+и необходимости в рефакторинге (или вообще переписывании всего проекта).
+
+> Если вы пишете мелкий сервис, в котором не планируется долгосрочное развитие.
+> У него понятная и ограниченная функциональность, которая потом скорее всего никем не будет дорабатываться.
+> То DDD и его оверхед на старте вам разумеется не нужен.
+>
+> Удалите все слои, кроме `application`, переименуйте `application` в `handlers` и разрабатывайте, как привыкли.
+
+Чтобы погрузиться в эту тему поподробнее, рекомендуется посмотреть доклады:
+
+1. [DDD в Go](https://www.youtube.com/watch?v=EntrbDAD-DU)
+2. [Транзакционность в DDD](https://runtime.strm.yandex-team.ru/player/video/vplvz6kgpwasu2xjyfdk?autoplay=0&mute=0&t=0&preload=1)
+
+А также почитать книги:
+1. [Изучаем DDD, Влад Хононов](https://www.litres.ru/book/vlad-hononov/izuchaem-ddd-predmetno-orientirovannoe-proektirovanie-70920895/)
+2. [Go with the Domain](https://threedots.tech/go-with-the-domain/) (после подписки на email рассылку бесплатно пришлют)

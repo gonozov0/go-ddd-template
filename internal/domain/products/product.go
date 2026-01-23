@@ -1,64 +1,104 @@
 package products
 
 import (
-	"errors"
-	"fmt"
-
 	"github.com/google/uuid"
+
+	"go-ddd-template/pkg/slices"
+
+	"errors"
+
+	"go-ddd-template/internal/domain/shared/valueobjects"
 )
 
 var (
-	ErrProductNotFound = errors.New("product not found")
-	ErrInvalidProduct  = errors.New("invalid product")
+	ErrProductNotFound         = errors.New("product not found")
+	ErrInvalidProduct          = errors.New("invalid product")
+	ErrProductAlreadyPublished = errors.New("product already published")
 )
 
 type Product struct {
-	id    uuid.UUID
-	name  string
-	price float64
+	id            valueobjects.ProductID
+	name          valueobjects.ProductName
+	price         valueobjects.ProductPrice
+	status        valueobjects.ProductStatus
+	imageFilename valueobjects.ImageFilename
+	imageURL      valueobjects.ImageURL
 }
 
-func NewProduct(id uuid.UUID, name string, price float64) (*Product, error) {
-	if err := validateProductName(name); err != nil {
-		return nil, err
-	}
-	if err := validateProductPrice(price); err != nil {
-		return nil, err
-	}
-
+func NewProduct(
+	id valueobjects.ProductID,
+	name valueobjects.ProductName,
+	price valueobjects.ProductPrice,
+	status valueobjects.ProductStatus,
+	imageFilename valueobjects.ImageFilename,
+	imageURL valueobjects.ImageURL,
+) *Product {
 	return &Product{
-		id:    id,
-		name:  name,
-		price: price,
-	}, nil
+		id:            id,
+		name:          name,
+		price:         price,
+		status:        status,
+		imageFilename: imageFilename,
+		imageURL:      imageURL,
+	}
 }
 
-func CreateProduct(name string, price float64) (*Product, error) {
-	return NewProduct(uuid.New(), name, price)
+func CreateProduct(name valueobjects.ProductName, price valueobjects.ProductPrice) *Product {
+	return NewProduct(
+		valueobjects.ProductID(uuid.New()),
+		name,
+		price,
+		valueobjects.ProductStatusInit,
+		valueobjects.EmptyImageFilename,
+		valueobjects.EmptyImageURL,
+	)
 }
 
-func (p *Product) ID() uuid.UUID {
+func (p *Product) GetID() valueobjects.ProductID {
 	return p.id
 }
 
-func (p *Product) Name() string {
+func (p *Product) GetName() valueobjects.ProductName {
 	return p.name
 }
 
-func (p *Product) Price() float64 {
+func (p *Product) GetPrice() valueobjects.ProductPrice {
 	return p.price
 }
 
-func validateProductName(name string) error {
-	if name == "" {
-		return fmt.Errorf("%w: name is required", ErrInvalidProduct)
+func (p *Product) GetStatus() valueobjects.ProductStatus {
+	return p.status
+}
+
+func (p *Product) Publish() error {
+	if p.status == valueobjects.ProductStatusPublished {
+		return ErrProductAlreadyPublished
 	}
+
+	p.status = valueobjects.ProductStatusPublished
+
 	return nil
 }
 
-func validateProductPrice(price float64) error {
-	if price <= 0 {
-		return fmt.Errorf("%w: price must be greater than 0", ErrInvalidProduct)
-	}
-	return nil
+func (p *Product) GetImageFilename() valueobjects.ImageFilename {
+	return p.imageFilename
+}
+
+func (p *Product) SetImageFilename(imageFilename valueobjects.ImageFilename) {
+	p.imageFilename = imageFilename
+	p.imageURL = valueobjects.EmptyImageURL
+}
+
+func (p *Product) GetImageURL() valueobjects.ImageURL {
+	return p.imageURL
+}
+
+func (p *Product) SetImageURL(imageURL valueobjects.ImageURL) {
+	p.imageURL = imageURL
+}
+
+type Products []Product
+
+func (ps Products) IDs() valueobjects.ProductIDs {
+	return slices.Map(ps, func(p Product) valueobjects.ProductID { return p.GetID() })
 }

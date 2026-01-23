@@ -2,48 +2,85 @@ package orders
 
 import (
 	"github.com/google/uuid"
+
+	"errors"
+
+	"go-ddd-template/internal/domain/shared/valueobjects"
+)
+
+var (
+	ErrOrderNotFound          = errors.New("order not found")
+	ErrOrderAlreadyProcessing = errors.New("order already processing")
 )
 
 type Order struct {
-	id     uuid.UUID
-	userID uuid.UUID
-	status OrderStatus
-	items  []Item
+	id       valueobjects.OrderID
+	userID   valueobjects.UserID
+	status   OrderStatus
+	products []Product
 }
 
-func NewOrder(id uuid.UUID, userID uuid.UUID, status OrderStatus, items []Item) (*Order, error) {
+func NewOrder(
+	id valueobjects.OrderID,
+	userID valueobjects.UserID,
+	status OrderStatus,
+	products []Product,
+) *Order {
 	return &Order{
-		id:     id,
-		userID: userID,
-		status: status,
-		items:  items,
-	}, nil
+		id:       id,
+		userID:   userID,
+		status:   status,
+		products: products,
+	}
 }
 
-func CreateOrder(userID uuid.UUID, items []Item) (*Order, error) {
-	return NewOrder(uuid.New(), userID, OrderStatusCreated, items)
+func CreateOrder(userID valueobjects.UserID, products []Product) *Order {
+	return NewOrder(
+		valueobjects.OrderID(uuid.New()),
+		userID,
+		OrderStatusCreated,
+		products,
+	)
 }
 
-func (o *Order) ID() uuid.UUID {
+func (o *Order) GetID() valueobjects.OrderID {
 	return o.id
 }
 
-func (o *Order) UserID() uuid.UUID {
+func (o *Order) GetUserID() valueobjects.UserID {
 	return o.userID
 }
 
-func (o *Order) Status() OrderStatus {
+func (o *Order) GetStatus() OrderStatus {
 	return o.status
 }
 
-func (o *Order) Items() []Item {
-	return o.items
+func (o *Order) GetProductIDs() valueobjects.ProductIDs {
+	ids := make(valueobjects.ProductIDs, 0, len(o.products))
+
+	for _, product := range o.products {
+		ids = append(ids, product.GetID())
+	}
+
+	return ids
 }
 
-func (o *Order) Price() float64 {
-	var total float64
-	for _, item := range o.items {
-		total += item.Price()
+func (o *Order) GetPrice() valueobjects.ProductPrice {
+	var total valueobjects.ProductPrice
+
+	for _, product := range o.products {
+		total += product.GetPrice()
 	}
+
 	return total
+}
+
+func (o *Order) Process() error {
+	if o.status == OrderStatusProcessing {
+		return ErrOrderAlreadyProcessing
+	}
+
+	o.status = OrderStatusProcessing
+
+	return nil
 }

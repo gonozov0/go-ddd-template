@@ -1,26 +1,24 @@
 package application
 
 import (
-	"context"
-
-	"go-echo-template/internal/domain/orders"
-	"go-echo-template/internal/domain/products"
-	"go-echo-template/internal/domain/users"
-
-	"github.com/google/uuid"
+	"go-ddd-template/internal/service/deliveries"
+	"go-ddd-template/internal/service/orders"
+	"go-ddd-template/internal/service/products"
+	"go-ddd-template/internal/service/users"
 )
 
 type UserRepository interface {
-	CreateUser(ctx context.Context, email string, createFn func() (*users.User, error)) (*users.User, error)
-	UpdateUser(ctx context.Context, id uuid.UUID, updateFn func(*users.User) (bool, error)) (*users.User, error)
-	GetUser(ctx context.Context, id uuid.UUID) (*users.User, error)
+	users.UserRepository
 }
 
 type OrderRepository interface {
-	CreateOrder(ctx context.Context, itemIDs []uuid.UUID, createFn func() (*orders.Order, error)) (*orders.Order, error)
-	GetOrder(ctx context.Context, id uuid.UUID) (*orders.Order, error)
+	orders.OrderRepository
 }
 
 type ProductRepository interface {
-	GetProducts(ctx context.Context, ids []uuid.UUID) ([]products.Product, error)
+	products.ProductRepository
+}
+
+type DeliveryRepository interface {
+	deliveries.DeliveryRepository
 }

@@ -3,36 +3,30 @@ package orders
 import (
 	"context"
 
-	"go-echo-template/internal/domain/orders"
-	"go-echo-template/internal/domain/products"
-	"go-echo-template/internal/domain/users"
-
-	"github.com/google/uuid"
+	domain "go-ddd-template/internal/domain/orders"
+	"go-ddd-template/internal/domain/shared/valueobjects"
+	"go-ddd-template/internal/service/users"
 )
 
 type OrderRepository interface {
-	CreateOrder(ctx context.Context, itemIDs []uuid.UUID, createFn func() (*orders.Order, error)) (*orders.Order, error)
-	GetOrder(ctx context.Context, id uuid.UUID) (*orders.Order, error)
+	CreateOrder(
+		ctx context.Context,
+		productIDs valueobjects.ProductIDs,
+		createFn func([]domain.Product) (*domain.Order, error),
+	) (*domain.Order, error)
+	GetOrder(ctx context.Context, id valueobjects.OrderID) (*domain.Order, error)
+	DeleteOrder(ctx context.Context, orderID valueobjects.OrderID) error
+	ProcessOrders(ctx context.Context, updateOrders func([]*domain.Order) error) error
 }
 
-type UserRepository interface {
-	GetUser(ctx context.Context, id uuid.UUID) (*users.User, error)
-}
-
-type ProductRepository interface {
-	GetProducts(ctx context.Context, ids []uuid.UUID) ([]products.Product, error)
-}
-
-type OrderCreationService struct {
+type OrderService struct {
 	orderRepo   OrderRepository
-	userRepo    UserRepository
-	productRepo ProductRepository
+	userService users.UserService
 }
 
-func NewOrderCreationService(or OrderRepository, ur UserRepository, pr ProductRepository) *OrderCreationService {
-	return &OrderCreationService{
+func NewOrderService(or OrderRepository, us users.UserService) OrderService {
+	return OrderService{
 		orderRepo:   or,
-		userRepo:    ur,
-		productRepo: pr,
+		userService: us,
 	}
 }

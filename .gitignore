@@ -33,3 +33,5 @@ bin/*
 
 profiles/*
 !profiles/.gitkeep
+
+.claude/settings.local.json

@@ -2,9 +2,8 @@ package users
 
 import (
 	"errors"
-	"fmt"
 
-	"github.com/google/uuid"
+	"go-ddd-template/internal/domain/shared/valueobjects"
 )
 
 var (
@@ -15,64 +14,32 @@ var (
 )
 
 type User struct {
-	id    uuid.UUID
-	name  string
-	email string
+	id    valueobjects.UserID
+	name  Name
+	email valueobjects.Email
 }
 
-func NewUser(id uuid.UUID, name, email string) (*User, error) {
-	if err := validateUsername(name); err != nil {
-		return nil, err
-	}
-	if err := validateEmail(email); err != nil {
-		return nil, err
-	}
-
+func NewUser(id valueobjects.UserID, name Name, email valueobjects.Email) *User {
 	return &User{
 		id:    id,
 		name:  name,
 		email: email,
-	}, nil
+	}
 }
 
-func CreateUser(name, email string) (*User, error) {
-	return NewUser(uuid.New(), name, email)
+func (u *User) Update(name Name, email valueobjects.Email) {
+	u.name = name
+	u.email = email
 }
 
-func (u *User) ID() uuid.UUID {
+func (u *User) GetID() valueobjects.UserID {
 	return u.id
 }
 
-func (u *User) Name() string {
+func (u *User) GetName() Name {
 	return u.name
 }
 
-func (u *User) Email() string {
+func (u *User) GetEmail() valueobjects.Email {
 	return u.email
-}
-
-func (u *User) SendToEmail(_ string) error {
-	return errors.New("not implemented")
-}
-
-func (u *User) ChangeEmail(email string) error {
-	if err := validateEmail(email); err != nil {
-		return err
-	}
-	u.email = email
-	return nil
-}
-
-func validateUsername(username string) error {
-	if username == "" {
-		return fmt.Errorf("%w: name is required", ErrUserValidation)
-	}
-	return nil
-}
-
-func validateEmail(email string) error {
-	if email == "" {
-		return fmt.Errorf("%w: email is required", ErrUserValidation)
-	}
-	return nil
 }

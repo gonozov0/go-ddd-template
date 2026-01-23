@@ -1,0 +1,701 @@
+syntax = "proto3";
+
+package education.backend.template.server;
+
+import "google/api/annotations.proto";
+
+option go_package = "go-ddd-template/generated/server";
+import "google/protobuf/empty.proto";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Go template"
+    version: "0.0.1"
+    description: "Шаблон микросервиса на Go. Сервис, в качестве примера, имитирует работу интернет-магазина. Он выполняет примитивную логику по работе с пользльзователями, товарами и заказами"
+  };
+  security_definitions: {
+    security: {
+      key: "ServiceTicket"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "X-Ya-Service-Ticket"
+        description: "Service ticket for interacting with the service"
+      }
+    }
+    security: {
+      key: "UserTicket"
+      value: {
+        type: TYPE_API_KEY
+        in: IN_HEADER
+        name: "X-Ya-User-Ticket"
+        description: "User ticket"
+      }
+    }
+  };
+};
+
+message CreateUserRequest {
+  string id = 1; // Идентификатор пользователя
+  string name = 2; // Имя пользователя
+  string email = 3; // Адрес электронной почты пользователя (значение должно быть уникальным для каждого пользователя)
+}
+
+message CreateUserResponse {
+  string id = 1; // Идентификатор пользователя в системе
+}
+
+message GetUserRequest {
+  string id = 1; // Идентификатор пользователя в системе
+}
+
+message GetUserResponse {
+  string id = 1; // Идентификатор пользователя в системе
+  string name = 2; // Имя пользователя
+  string email = 3; // Адрес электронной почты пользователя
+}
+
+message DeleteUserRequest{
+    string id = 1; // Идентификатор пользователя в системе
+}
+
+message GetProductsRequest {
+  repeated string ids = 1; // Идентификаторы продуктов (массив uuid'ов)
+}
+
+message GetProductsResponse {
+  repeated ProductResponseItem items = 1;
+}
+
+message ProductResponseItem {
+  string id = 1; // Идентификатор продукта (uuid)
+  string name = 2; // Название продукта
+  double price = 3; // Стоимость продукта
+  string status = 4; // Статус продукта (enum: inited - продукт создан, published - продукт прошёл проверку, reserved - продукт зарезервирован)
+}
+
+message DeleteProductsRequest{
+    repeated string ids = 1; // Идентификаторы продуктов (массив uuid'ов)
+}
+
+message GetProductImageUploadURLRequest {
+  string id = 1; // Идентификатор продукта (uuid)
+  string filename = 2; // Название файла для загрузки
+}
+
+message GetProductImageUploadURLResponse {
+  string upload_url = 1; // Presigned URL для загрузки изображения в S3
+}
+
+message ConfirmProductImageUploadRequest {
+  string id = 1; // Идентификатор продукта (uuid)
+}
+
+message ConfirmProductImageUploadResponse {
+  string image_url = 1; // Публичная ссылка на изображение в S3
+}
+
+message CreateOrderRequest {
+  repeated string product_ids = 1; // Идентификаторы продуктов (массив uuid'ов)
+}
+
+message CreateOrderResponse {
+  string id = 1; // Идентификатор созданного заказа (uuid)
+}
+
+message CreateProductsRequest {
+  repeated ProductRequestItem items = 1;
+}
+
+message CreateProductsResponse {
+  repeated string ids = 1; // Идентификаторы созданных продуктов (массив uuid'ов)
+}
+
+message ProductRequestItem {
+  string name = 1; // Название продукта
+  double price = 2; // Стоимость продукта
+}
+
+message DeleteOrderRequest {
+  string id = 1; // Идентификатор заказа (uuid)
+}
+
+message DeleteDeliveryRequest {
+    string id = 1; // Идентификатор доставки (uuid)
+}
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
+    option (google.api.http) = {
+      post: "/users"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Создание пользователя";
+      description: "Создание пользователя в системе. Требуется, чтобы для каждого пользователя был уникальный адрес электронной почты (email)"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Пользователь успешно создан"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - invalid user\n - validation error"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {
+    option (google.api.http) = {get: "/users/{id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Получение пользователя";
+      description: "Получение созданного ранее пользователя"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Возвращается информация о запрашиваемом пользователе"
+        }
+      }
+      responses: {
+        key: "404"
+        value: {
+          description: "Запрашивается пользователь, которого нет в системе. Возможные ошибки:\n - user not found"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+  rpc DeleteUser(DeleteUserRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {delete: "/users/{id}"};
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Удаление пользователя";
+      description: "Удаление созданного ранее пользователя"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Пользователь успешно удален"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - empty user id"
+        }
+      }
+      responses: {
+        key: "404"
+        value: {
+          description: "Запрашивается пользователь, которого нет в системе. Возможные ошибки:\n - user not found"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+}
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse) {
+    option (google.api.http) = {
+      post: "/orders"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Создание заказа";
+      description: "Заказ офорляется на того пользователя, который указан в user ticket'е"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        },
+        {
+          security_requirement: {
+            key: "UserTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Заказ успешно создан"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID"
+        }
+      }
+      responses: {
+        key: "404"
+        value: {
+          description: "Переданы идентификаторы ресурсов, которых нет в системе. Возможные ошибки:\n - user not found\n - product not found"
+        }
+      }
+      responses: {
+        key: "409"
+        value: {
+          description: "Невозможно создать заказ. Возможные ошибки:\n - product already reserved"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+  rpc DeleteOrder(DeleteOrderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/orders/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Удаление заказа";
+      description: "Пользователь может удалить только свой заказ. Требуется обязательно передать user ticket"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        },
+        {
+          security_requirement: {
+            key: "UserTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Заказ успешно удален"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+}
+
+service ProductService {
+  rpc CreateProducts(CreateProductsRequest) returns (CreateProductsResponse) {
+    option (google.api.http) = {
+      post: "/products"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Создание товаров";
+      description: "Создание несколько товаров, идентификаторы назначаются системой. Если в каком-то одном продукте некорректные данные, то запрос завершится с ошибкой и ничего не будет создано"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        },
+        {
+          security_requirement: {
+            key: "UserTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Товары успешно созданы"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - invalid product"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse) {
+    option (google.api.http) = {
+      post: "/products/get_list"
+      body: "ids"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Получение продуктов";
+      description: "Получение продуктов с указанными идентификаторами. Требуется, чтобы все идентификаторы были валидными и им соответствовали продукты в системе"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Возвращается информация о запрашиваемых товарах"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID"
+        }
+      }
+      responses: {
+        key: "404"
+        value: {
+          description: "Один из запрашиваемых товаров отсутствует в системе. Возможные ошибки:\n - product not found"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+  rpc DeleteProducts(DeleteProductsRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/products/delete_ids"
+      body: "ids"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Удаление продуктов";
+      description: "Удаление продуктов с указанными идентификаторами. Требуется, чтобы все идентификаторы были валидными и им соответствовали продукты в системе."
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Товары успешно удалены"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+  rpc GetProductImageUploadURL(GetProductImageUploadURLRequest) returns (GetProductImageUploadURLResponse) {
+    option (google.api.http) = {
+      post: "/products/{id}/image/upload"
+      body: "filename"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Получение presigned URL для загрузки изображения";
+      description: "Возвращает presigned S3 URL для загрузки изображения продукта. Требуется валидный идентификатор продукта и имя файла с поддерживаемым расширением."
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Presigned URL успешно получен"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID\n - invalid image filename"
+        }
+      }
+      responses: {
+        key: "404"
+        value: {
+          description: "Продукт не найден в системе. Возможные ошибки:\n - product not found"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+  rpc ConfirmProductImageUpload(ConfirmProductImageUploadRequest) returns (ConfirmProductImageUploadResponse) {
+    option (google.api.http) = {
+      post: "/products/{id}/image/confirm"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Подтверждение загрузки изображения продукта";
+      description: "Проверяет наличие файла в S3 и генерирует для него публичную ссылку на чтение. Возвращает публичный URL изображения."
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Изображение успешно подтверждено, возвращается публичная ссылка"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID"
+        }
+      }
+      responses: {
+        key: "404"
+        value: {
+          description: "Продукт не найден в системе или файл отсутствует в S3. Возможные ошибки:\n - product not found\n - file does not exist in bucket"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+}
+
+message CheckTicketsResponse {
+    uint64 yauid = 1; // Идентификатор пользователя, переданный в user ticket'е
+    uint32 client_tvm_id = 2; // Идентификатор tvm'а, который подписал user ticket
+};
+
+service CheckService {
+  rpc CheckTickets(google.protobuf.Empty) returns (CheckTicketsResponse) {
+    option (google.api.http) = {
+      get: "/checks/tickets"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Проверка ticket'ов";
+      description: "Эта ручка используется для проверки корректной работы с переданными ticket'ами"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        },
+        {
+          security_requirement: {
+            key: "UserTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Переданные тикеты валидны"
+        }
+      }
+      responses: {
+        key: "401"
+        value: {
+          description: "Переданы некорректные авторизационные данные. Возможные ошибки:\n - user ticket required"
+        }
+      }
+    };
+  }
+  rpc CheckErrors(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      get: "/checks/errors"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Проверка ошибки";
+      description: "Эта ручка всегда возвращает внутреннюю ошибку сервис"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+  rpc CheckPanics(google.protobuf.Empty) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      get: "/checks/panics"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Проверка паники";
+      description: "Эта ручка всегда вызывает панику в сервисе"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+}
+
+
+message Delivery {
+  string id = 1;
+  string order_id = 2;
+  string created_at = 3;
+}
+
+message ListDeliveriesResponse {
+  repeated Delivery deliveries = 1;
+}
+
+service DeliveryService {
+  rpc ListDeliveries(google.protobuf.Empty) returns (ListDeliveriesResponse) {
+    option (google.api.http) = {
+      get: "/deliveries"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Получение доставок";
+      description: "Возвращает список доставок"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: { description: "Список доставок" }
+      }
+    };
+  }
+  rpc DeleteDelivery(DeleteDeliveryRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+        delete: "/deliveries/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Удаление доставки";
+      description: "Удаляется доставка с указанными идентификатором"
+      security: [
+        {
+          security_requirement: {
+            key: "ServiceTicket"
+            value: {}
+          }
+        }
+      ];
+      responses: {
+        key: "200"
+        value: {
+          description: "Доставка успешно удалена"
+        }
+      }
+      responses: {
+        key: "400"
+        value: {
+          description: "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID"
+        }
+      }
+      responses: {
+        key: "500"
+        value: {
+          description: "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error"
+        }
+      }
+    };
+  }
+}

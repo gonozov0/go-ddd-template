@@ -1,0 +1,968 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Go template",
+    "description": "Шаблон микросервиса на Go. Сервис, в качестве примера, имитирует работу интернет-магазина. Он выполняет примитивную логику по работе с пользльзователями, товарами и заказами",
+    "version": "0.0.1"
+  },
+  "tags": [
+    {
+      "name": "UserService"
+    },
+    {
+      "name": "OrderService"
+    },
+    {
+      "name": "ProductService"
+    },
+    {
+      "name": "CheckService"
+    },
+    {
+      "name": "DeliveryService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/checks/errors": {
+      "get": {
+        "summary": "Проверка ошибки",
+        "description": "Эта ручка всегда возвращает внутреннюю ошибку сервис",
+        "operationId": "CheckService_CheckErrors",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "CheckService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    },
+    "/checks/panics": {
+      "get": {
+        "summary": "Проверка паники",
+        "description": "Эта ручка всегда вызывает панику в сервисе",
+        "operationId": "CheckService_CheckPanics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "CheckService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    },
+    "/checks/tickets": {
+      "get": {
+        "summary": "Проверка ticket'ов",
+        "description": "Эта ручка используется для проверки корректной работы с переданными ticket'ами",
+        "operationId": "CheckService_CheckTickets",
+        "responses": {
+          "200": {
+            "description": "Переданные тикеты валидны",
+            "schema": {
+              "$ref": "#/definitions/serverCheckTicketsResponse"
+            }
+          },
+          "401": {
+            "description": "Переданы некорректные авторизационные данные. Возможные ошибки:\n - user ticket required",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "CheckService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          },
+          {
+            "UserTicket": []
+          }
+        ]
+      }
+    },
+    "/deliveries": {
+      "get": {
+        "summary": "Получение доставок",
+        "description": "Возвращает список доставок",
+        "operationId": "DeliveryService_ListDeliveries",
+        "responses": {
+          "200": {
+            "description": "Список доставок",
+            "schema": {
+              "$ref": "#/definitions/serverListDeliveriesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "DeliveryService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    },
+    "/deliveries/{id}": {
+      "delete": {
+        "summary": "Удаление доставки",
+        "description": "Удаляется доставка с указанными идентификатором",
+        "operationId": "DeliveryService_DeleteDelivery",
+        "responses": {
+          "200": {
+            "description": "Доставка успешно удалена",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Идентификатор доставки (uuid)",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DeliveryService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    },
+    "/orders": {
+      "post": {
+        "summary": "Создание заказа",
+        "description": "Заказ офорляется на того пользователя, который указан в user ticket'е",
+        "operationId": "OrderService_CreateOrder",
+        "responses": {
+          "200": {
+            "description": "Заказ успешно создан",
+            "schema": {
+              "$ref": "#/definitions/serverCreateOrderResponse"
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID",
+            "schema": {}
+          },
+          "404": {
+            "description": "Переданы идентификаторы ресурсов, которых нет в системе. Возможные ошибки:\n - user not found\n - product not found",
+            "schema": {}
+          },
+          "409": {
+            "description": "Невозможно создать заказ. Возможные ошибки:\n - product already reserved",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/serverCreateOrderRequest"
+            }
+          }
+        ],
+        "tags": [
+          "OrderService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          },
+          {
+            "UserTicket": []
+          }
+        ]
+      }
+    },
+    "/orders/{id}": {
+      "delete": {
+        "summary": "Удаление заказа",
+        "description": "Пользователь может удалить только свой заказ. Требуется обязательно передать user ticket",
+        "operationId": "OrderService_DeleteOrder",
+        "responses": {
+          "200": {
+            "description": "Заказ успешно удален",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Идентификатор заказа (uuid)",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "OrderService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          },
+          {
+            "UserTicket": []
+          }
+        ]
+      }
+    },
+    "/products": {
+      "post": {
+        "summary": "Создание товаров",
+        "description": "Создание несколько товаров, идентификаторы назначаются системой. Если в каком-то одном продукте некорректные данные, то запрос завершится с ошибкой и ничего не будет создано",
+        "operationId": "ProductService_CreateProducts",
+        "responses": {
+          "200": {
+            "description": "Товары успешно созданы",
+            "schema": {
+              "$ref": "#/definitions/serverCreateProductsResponse"
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - invalid product",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/serverCreateProductsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ProductService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          },
+          {
+            "UserTicket": []
+          }
+        ]
+      }
+    },
+    "/products/delete_ids": {
+      "post": {
+        "summary": "Удаление продуктов",
+        "description": "Удаление продуктов с указанными идентификаторами. Требуется, чтобы все идентификаторы были валидными и им соответствовали продукты в системе.",
+        "operationId": "ProductService_DeleteProducts",
+        "responses": {
+          "200": {
+            "description": "Товары успешно удалены",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ids",
+            "description": "Идентификаторы продуктов (массив uuid'ов)",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "tags": [
+          "ProductService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    },
+    "/products/get_list": {
+      "post": {
+        "summary": "Получение продуктов",
+        "description": "Получение продуктов с указанными идентификаторами. Требуется, чтобы все идентификаторы были валидными и им соответствовали продукты в системе",
+        "operationId": "ProductService_GetProducts",
+        "responses": {
+          "200": {
+            "description": "Возвращается информация о запрашиваемых товарах",
+            "schema": {
+              "$ref": "#/definitions/serverGetProductsResponse"
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID",
+            "schema": {}
+          },
+          "404": {
+            "description": "Один из запрашиваемых товаров отсутствует в системе. Возможные ошибки:\n - product not found",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ids",
+            "description": "Идентификаторы продуктов (массив uuid'ов)",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "tags": [
+          "ProductService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    },
+    "/products/{id}/image/confirm": {
+      "post": {
+        "summary": "Подтверждение загрузки изображения продукта",
+        "description": "Проверяет наличие файла в S3 и генерирует для него публичную ссылку на чтение. Возвращает публичный URL изображения.",
+        "operationId": "ProductService_ConfirmProductImageUpload",
+        "responses": {
+          "200": {
+            "description": "Изображение успешно подтверждено, возвращается публичная ссылка",
+            "schema": {
+              "$ref": "#/definitions/serverConfirmProductImageUploadResponse"
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID",
+            "schema": {}
+          },
+          "404": {
+            "description": "Продукт не найден в системе или файл отсутствует в S3. Возможные ошибки:\n - product not found\n - file does not exist in bucket",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Идентификатор продукта (uuid)",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ProductService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    },
+    "/products/{id}/image/upload": {
+      "post": {
+        "summary": "Получение presigned URL для загрузки изображения",
+        "description": "Возвращает presigned S3 URL для загрузки изображения продукта. Требуется валидный идентификатор продукта и имя файла с поддерживаемым расширением.",
+        "operationId": "ProductService_GetProductImageUploadURL",
+        "responses": {
+          "200": {
+            "description": "Presigned URL успешно получен",
+            "schema": {
+              "$ref": "#/definitions/serverGetProductImageUploadURLResponse"
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - invalid UUID\n - invalid image filename",
+            "schema": {}
+          },
+          "404": {
+            "description": "Продукт не найден в системе. Возможные ошибки:\n - product not found",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Идентификатор продукта (uuid)",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "filename",
+            "description": "Название файла для загрузки",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "tags": [
+          "ProductService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "summary": "Создание пользователя",
+        "description": "Создание пользователя в системе. Требуется, чтобы для каждого пользователя был уникальный адрес электронной почты (email)",
+        "operationId": "UserService_CreateUser",
+        "responses": {
+          "200": {
+            "description": "Пользователь успешно создан",
+            "schema": {
+              "$ref": "#/definitions/serverCreateUserResponse"
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - invalid user\n - validation error",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/serverCreateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Получение пользователя",
+        "description": "Получение созданного ранее пользователя",
+        "operationId": "UserService_GetUser",
+        "responses": {
+          "200": {
+            "description": "Возвращается информация о запрашиваемом пользователе",
+            "schema": {
+              "$ref": "#/definitions/serverGetUserResponse"
+            }
+          },
+          "404": {
+            "description": "Запрашивается пользователь, которого нет в системе. Возможные ошибки:\n - user not found",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Идентификатор пользователя в системе",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      },
+      "delete": {
+        "summary": "Удаление пользователя",
+        "description": "Удаление созданного ранее пользователя",
+        "operationId": "UserService_DeleteUser",
+        "responses": {
+          "200": {
+            "description": "Пользователь успешно удален",
+            "schema": {
+              "type": "object",
+              "properties": {}
+            }
+          },
+          "400": {
+            "description": "Переданы некорректные данные. Возможные ошибки:\n - empty user id",
+            "schema": {}
+          },
+          "404": {
+            "description": "Запрашивается пользователь, которого нет в системе. Возможные ошибки:\n - user not found",
+            "schema": {}
+          },
+          "500": {
+            "description": "Внутренняя ошибка сервиса. Возможные ошибки:\n - internal error",
+            "schema": {}
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Идентификатор пользователя в системе",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ],
+        "security": [
+          {
+            "ServiceTicket": []
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "serverCheckTicketsResponse": {
+      "type": "object",
+      "properties": {
+        "yauid": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Идентификатор пользователя, переданный в user ticket'е"
+        },
+        "clientTvmId": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Идентификатор tvm'а, который подписал user ticket"
+        }
+      }
+    },
+    "serverConfirmProductImageUploadResponse": {
+      "type": "object",
+      "properties": {
+        "imageUrl": {
+          "type": "string",
+          "title": "Публичная ссылка на изображение в S3"
+        }
+      }
+    },
+    "serverCreateOrderRequest": {
+      "type": "object",
+      "properties": {
+        "productIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Идентификаторы продуктов (массив uuid'ов)"
+        }
+      }
+    },
+    "serverCreateOrderResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Идентификатор созданного заказа (uuid)"
+        }
+      }
+    },
+    "serverCreateProductsRequest": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/serverProductRequestItem"
+          }
+        }
+      }
+    },
+    "serverCreateProductsResponse": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Идентификаторы созданных продуктов (массив uuid'ов)"
+        }
+      }
+    },
+    "serverCreateUserRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Идентификатор пользователя"
+        },
+        "name": {
+          "type": "string",
+          "title": "Имя пользователя"
+        },
+        "email": {
+          "type": "string",
+          "title": "Адрес электронной почты пользователя (значение должно быть уникальным для каждого пользователя)"
+        }
+      }
+    },
+    "serverCreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Идентификатор пользователя в системе"
+        }
+      }
+    },
+    "serverDelivery": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "orderId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        }
+      }
+    },
+    "serverGetProductImageUploadURLResponse": {
+      "type": "object",
+      "properties": {
+        "uploadUrl": {
+          "type": "string",
+          "title": "Presigned URL для загрузки изображения в S3"
+        }
+      }
+    },
+    "serverGetProductsResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/serverProductResponseItem"
+          }
+        }
+      }
+    },
+    "serverGetUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Идентификатор пользователя в системе"
+        },
+        "name": {
+          "type": "string",
+          "title": "Имя пользователя"
+        },
+        "email": {
+          "type": "string",
+          "title": "Адрес электронной почты пользователя"
+        }
+      }
+    },
+    "serverListDeliveriesResponse": {
+      "type": "object",
+      "properties": {
+        "deliveries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/serverDelivery"
+          }
+        }
+      }
+    },
+    "serverProductRequestItem": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "Название продукта"
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "title": "Стоимость продукта"
+        }
+      }
+    },
+    "serverProductResponseItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Идентификатор продукта (uuid)"
+        },
+        "name": {
+          "type": "string",
+          "title": "Название продукта"
+        },
+        "price": {
+          "type": "number",
+          "format": "double",
+          "title": "Стоимость продукта"
+        },
+        "status": {
+          "type": "string",
+          "title": "Статус продукта (enum: inited - продукт создан, published - продукт прошёл проверку, reserved - продукт зарезервирован)"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "ServiceTicket": {
+      "type": "apiKey",
+      "description": "Service ticket for interacting with the service",
+      "name": "X-Ya-Service-Ticket",
+      "in": "header"
+    },
+    "UserTicket": {
+      "type": "apiKey",
+      "description": "User ticket",
+      "name": "X-Ya-User-Ticket",
+      "in": "header"
+    }
+  }
+}

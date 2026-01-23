@@ -2,82 +2,147 @@ package logger
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"runtime"
-	"strings"
+	"runtime/debug"
 
-	"github.com/getsentry/sentry-go"
+	"errors"
+	"fmt"
 
-	"go-echo-template/pkg/contextkeys"
+	"go-ddd-template/pkg/auth"
+	"go-ddd-template/pkg/grpcutils/middlewares"
+	"go-ddd-template/pkg/logger/sentry"
+	loggerutils "go-ddd-template/pkg/logger/utils"
+	"go-ddd-template/pkg/traces"
 )
 
-func Setup() {
-	opts := &slog.HandlerOptions{
-		Level: slog.LevelInfo,
+func Setup(cfg Config) error {
+	if !cfg.EnableJSONFormat {
+		slog.SetLogLoggerLevel(cfg.LogLevel)
+		return nil
 	}
-	logger := slog.New(newSentryJSONCtxHandler(os.Stdout, opts))
+
+	if err := sentry.Init(cfg.Sentry); err != nil {
+		return fmt.Errorf("failed to init errorbooster: %w", err)
+	}
+
+	opts := &slog.HandlerOptions{
+		Level: cfg.LogLevel,
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			switch a.Key {
+			case slog.LevelKey:
+				a.Key = "levelStr"
+				return a
+			case slog.TimeKey:
+				a.Key = "@timestamp"
+				val := a.Value.Time()
+				a.Value = slog.Int64Value(val.Unix())
+
+				return a
+			default:
+				return a
+			}
+		},
+	}
+	logger := slog.New(newJSONCtxHandler(os.Stdout, opts))
 	slog.SetDefault(logger)
+
+	return nil
 }
 
-type sentryJSONCtxHandler struct {
+type JSONCtxHandler struct {
 	*slog.JSONHandler
 }
 
-func (h *sentryJSONCtxHandler) Handle(ctx context.Context, r slog.Record) error {
-	contextInRecord := false
-	r.Attrs(func(a slog.Attr) bool {
-		contextInRecord = a.Key == "context"
-		return !contextInRecord
-	})
-
-	requestIDKey := contextkeys.RequestIDCtxKey
-	traceIDKey := contextkeys.TraceIDCtxKey
-	requestID := fmt.Sprintf("%v", ctx.Value(requestIDKey))
-	traceID := fmt.Sprintf("%v", ctx.Value(traceIDKey))
-
-	if r.Level == slog.LevelError {
-		stackTrace := getStackTrace()
-		r.AddAttrs(slog.String("stacktrace", stackTrace))
-
-		// Sending event to sentry
-		if hub, ok := ctx.Value(sentry.HubContextKey).(*sentry.Hub); ok && hub != nil {
-			hub.WithScope(func(scope *sentry.Scope) {
-				scope.SetLevel(sentry.LevelError)
-				scope.SetTag(string(requestIDKey), requestID)
-				scope.SetTag(string(traceIDKey), traceID)
-				scope.SetExtra("stacktrace", stackTrace)
-				hub.CaptureMessage(r.Message)
-			})
-		}
+//nolint:cyclop
+func (h *JSONCtxHandler) Handle(ctx context.Context, r slog.Record) error {
+	userInfo := auth.GetUserInfo(ctx)
+	if !userInfo.IsEmpty() {
+		r.Add("user_tvm_id", userInfo.ID)
 	}
 
-	// Log recored does not contain any custom 'context' key -> logging values from ctx
-	if !contextInRecord {
-		r.AddAttrs(slog.Group(
-			"context",
-			slog.String(string(requestIDKey), requestID),
-			slog.String(string(traceIDKey), traceID),
-		))
+	requestID := traces.GetRequestID(ctx)
+	r.Add("request_id", requestID)
+
+	correlationID := traces.GetCorrelationID(ctx)
+	r.Add("correlation_id", correlationID)
+
+	grpcReqStr := middlewares.GetGRPCRequestStr(ctx)
+	r.Add("grpc_request_str", grpcReqStr)
+
+	grpcMethod := middlewares.GetGRPCMethod(ctx)
+	r.Add("grpc_method", grpcMethod)
+
+	spanID := traces.GetSpanID(ctx)
+	r.Add("span.id", spanID)
+
+	traceID := traces.GetTraceID(ctx)
+	r.Add("trace.id", traceID)
+
+	attrs := make(map[string]any, r.NumAttrs())
+	r.Attrs(func(attr slog.Attr) bool {
+		attrs[attr.Key] = attr.Value.Any()
+		return true
+	})
+
+	if r.Level == slog.LevelError || r.Level == slog.LevelWarn {
+		err := getError(attrs)
+		if err != nil {
+			var attrErr loggerutils.AttrError
+
+			if errors.As(err, &attrErr) {
+				for _, attr := range attrErr.Attrs() {
+					if _, exists := attrs[attr.Key]; !exists {
+						attrs[attr.Key] = attr.Value.Any()
+					}
+
+					r.Add(attr.Key, attr.Value.Any())
+				}
+			}
+
+			if stacktrace := getStacktrace(err); stacktrace != "" {
+				r.Add("stacktrace", stacktrace)
+			}
+		}
+
+		sentry.Send(sentry.Event{
+			Message: r.Message,
+			Err:     err,
+			Attrs:   attrs,
+			Level:   r.Level,
+		})
 	}
 
 	return h.JSONHandler.Handle(ctx, r)
 }
 
-func newSentryJSONCtxHandler(w io.Writer, opts *slog.HandlerOptions) *sentryJSONCtxHandler {
+func newJSONCtxHandler(w io.Writer, opts *slog.HandlerOptions) *JSONCtxHandler {
 	jsonHandler := slog.NewJSONHandler(w, opts)
-	return &sentryJSONCtxHandler{
+
+	return &JSONCtxHandler{
 		JSONHandler: jsonHandler,
 	}
 }
 
-const stackBufSize = 4096 // 4KB
+func getError(attrs map[string]any) error {
+	if err, ok := attrs[loggerutils.KeyErr]; ok {
+		if e, ok := err.(error); ok {
+			return e
+		}
+	}
 
-func getStackTrace() string {
-	stackBuf := make([]byte, stackBufSize)
-	stackSize := runtime.Stack(stackBuf, false)
-	stackTrace := string(stackBuf[:stackSize])
-	return strings.TrimSpace(stackTrace)
+	return nil
+}
+
+func getStacktrace(err error) string {
+	var runtimeErr runtime.Error
+
+	switch {
+	case errors.As(err, &runtimeErr):
+		return string(debug.Stack())
+	default:
+		return ""
+	}
 }

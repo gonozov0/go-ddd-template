@@ -1,11 +1,6 @@
 services:
-  redis:
-    image: redis
-    ports:
-      - "6379:6379"
-
   postgres:
-    image: postgres
+    image: postgres:17
     ports:
       - "5432:5432"
     environment:
@@ -13,8 +8,54 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
       POSTGRES_MAX_CONNECTIONS: 100
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    tmpfs:
+      - /var/lib/postgresql/data
 
-volumes:
-  postgres_data:
+  ydb:
+    image: cr.yandex/yc/yandex-docker-local-ydb:latest
+    ports:
+      - "2135:2135"
+      - "2136:2136"
+      - "8765:8765"
+    environment:
+      - GRPC_PORT=2135
+      - YDB_USE_IN_MEMORY_PDISKS=true
+    hostname: localhost
+    healthcheck:
+      test: /ydb -e grpc://localhost:2135 -d /local scheme ls /local
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    ulimits:
+      nofile:
+        soft: 90000
+        hard: 90000
+
+  redis:
+    image: redis 
+    restart: always
+    ports:
+      - "6379:6379"
+
+  localstack-aws:
+    image: localstack/localstack:3.0
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - EDGE_PORT=4566
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  sqs:
+    image: softwaremill/elasticmq:latest
+    ports:
+      - "9324:9324"
+      - "9325:9325"
+    volumes:
+      - ./elasticmq.conf:/opt/elasticmq.conf
