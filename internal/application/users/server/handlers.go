@@ -14,7 +14,7 @@ type UserHandlers struct {
 func SetupHandlers(userRepo service.UserRepository) UserHandlers {
 	userService := service.NewUserService(userRepo)
 
-	//nolint:exhaustivestruct
+	//nolint:exhaustruct // partial initialization is intentional
 	return UserHandlers{
 		userService: userService,
 	}

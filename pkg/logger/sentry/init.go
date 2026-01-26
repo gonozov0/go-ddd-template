@@ -56,6 +56,8 @@ func getSentryEnvironment(envType environment.Type) string {
 		return "testing"
 	case environment.Dev:
 		return "development"
+	case environment.Local:
+		return "local"
 	default:
 		return ""
 	}

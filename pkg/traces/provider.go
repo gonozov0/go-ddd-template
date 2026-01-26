@@ -63,7 +63,7 @@ func NewTracerProvider(
 		tracesdk.WithSampler(sampler),
 	)
 
-	//nolint:exhaustivestruct
+	//nolint:exhaustruct // partial initialization is intentional
 	return &tracerProviderWrapper{
 		provider: tracerProvider,
 	}, tracerProvider.Shutdown, nil
@@ -77,7 +77,7 @@ type tracerProviderWrapper struct {
 
 func (p *tracerProviderWrapper) Tracer(name string, options ...trace.TracerOption) trace.Tracer {
 	tracer := p.provider.Tracer(name, options...)
-	//nolint:exhaustivestruct
+	//nolint:exhaustruct // partial initialization is intentional
 	return &tracerWrapper{tracer: tracer}
 }
 

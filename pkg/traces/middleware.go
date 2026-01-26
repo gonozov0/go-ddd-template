@@ -87,10 +87,10 @@ func NewTraceMiddleware(cfg Config) grpc.UnaryServerInterceptor {
 				span.SetStatus(codes.Ok, "")
 			}
 
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return resp, err
 		} else {
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return handler(ctx, req)
 		}
 	}

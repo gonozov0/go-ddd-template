@@ -1,4 +1,4 @@
-package crontests
+package crontests_test
 
 import (
 	"testing"

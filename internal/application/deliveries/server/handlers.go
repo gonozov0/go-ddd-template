@@ -14,7 +14,7 @@ type DeliveryHandlers struct {
 func SetupHandlers(deliveryRepo service.DeliveryRepository) DeliveryHandlers {
 	deliveryService := service.NewDeliveryService(deliveryRepo)
 
-	//nolint:exhaustivestruct
+	//nolint:exhaustruct // partial initialization is intentional
 	return DeliveryHandlers{
 		deliveryService: deliveryService,
 	}

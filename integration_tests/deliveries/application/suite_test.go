@@ -1,4 +1,4 @@
-package deliveries
+package deliveries_test
 
 import (
 	"testing"

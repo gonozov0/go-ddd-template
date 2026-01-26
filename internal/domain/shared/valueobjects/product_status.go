@@ -12,19 +12,19 @@ const (
 	ProductStatusReserved  ProductStatus = "reserved"
 )
 
-func (s ProductStatus) String() string {
-	return string(s)
-}
-
 func NewProductStatus(status string) (ProductStatus, error) {
-	switch status {
-	case ProductStatusInit.String():
+	switch ProductStatus(status) {
+	case ProductStatusInit:
 		return ProductStatusInit, nil
-	case ProductStatusPublished.String():
+	case ProductStatusPublished:
 		return ProductStatusPublished, nil
-	case ProductStatusReserved.String():
+	case ProductStatusReserved:
 		return ProductStatusReserved, nil
 	default:
 		return "", fmt.Errorf("invalid product status: %s", status)
 	}
+}
+
+func (s ProductStatus) String() string {
+	return string(s)
 }

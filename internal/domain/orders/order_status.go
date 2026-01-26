@@ -16,17 +16,17 @@ var AllOrderStatuses = []OrderStatus{
 	OrderStatusProcessing,
 }
 
-func (s OrderStatus) String() string {
-	return string(s)
-}
-
 func NewOrderStatus(status string) (OrderStatus, error) {
-	switch status {
-	case OrderStatusCreated.String():
+	switch OrderStatus(status) {
+	case OrderStatusCreated:
 		return OrderStatusCreated, nil
-	case OrderStatusProcessing.String():
+	case OrderStatusProcessing:
 		return OrderStatusProcessing, nil
 	default:
 		return "", fmt.Errorf("invalid order status: %s", status)
 	}
+}
+
+func (s OrderStatus) String() string {
+	return string(s)
 }

@@ -33,7 +33,7 @@ func (h UserHandlers) DeleteUser(
 		return nil, status.Errorf(codes.InvalidArgument, "%s", err.Error())
 	}
 
-	if err := h.userService.DeleteUser(ctx, id); err != nil {
+	if err = h.userService.DeleteUser(ctx, id); err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			return nil, status.Errorf(codes.NotFound, "%s", err.Error())
 		}

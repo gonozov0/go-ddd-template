@@ -17,23 +17,24 @@ func LogRequestResult() grpc.UnaryServerInterceptor {
 		resp, err = handler(ctx, req)
 
 		if !isLoggerRequired(info.FullMethod) {
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return resp, err
 		}
 
 		if err == nil {
 			slog.InfoContext(ctx, info.FullMethod, loggerutils.Attr("code", codes.OK))
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return resp, err
 		}
 
 		status, ok := status.FromError(err)
 		if !ok {
 			slog.WarnContext(ctx, info.FullMethod, loggerutils.ErrAttr(err))
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return resp, err
 		}
 
+		//nolint:exhaustive // We only want to log warnings for specific error codes
 		switch status.Code() {
 		case codes.Internal,
 			codes.Unknown,
@@ -41,7 +42,7 @@ func LogRequestResult() grpc.UnaryServerInterceptor {
 			codes.Unimplemented,
 			codes.DataLoss,
 			codes.Unavailable:
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return resp, err
 		default:
 			slog.InfoContext(
@@ -52,7 +53,7 @@ func LogRequestResult() grpc.UnaryServerInterceptor {
 				loggerutils.ErrAttr(err),
 			)
 
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return resp, err
 		}
 	}

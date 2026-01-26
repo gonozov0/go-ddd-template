@@ -20,7 +20,7 @@ func (h DeliveryHandlers) ListDeliveries(
 		return nil, fmt.Errorf("failed to list deliveries: %w", err)
 	}
 
-	//nolint:exhaustivestruct
+	//nolint:exhaustruct // partial initialization is intentional
 	resp := &pb.ListDeliveriesResponse{}
 	resp.Deliveries = make([]*pb.Delivery, 0, len(list))
 

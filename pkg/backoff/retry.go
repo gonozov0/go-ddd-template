@@ -30,11 +30,11 @@ func RunWithRetry(ctx context.Context, fn func() error, retryLimit uint64) error
 					"Backoff triggered",
 					loggerutils.ErrAttr(fmt.Errorf("backoff trigger warning: %w", err)),
 				)
-				//nolint:descriptiveerrors
+				//nolint:wrapcheck // preserve original error for logging
 				return err
 			}
 
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return backoff.Permanent(err)
 		}
 

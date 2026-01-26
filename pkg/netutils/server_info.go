@@ -17,6 +17,15 @@ type ServerInfo struct {
 	HTTPPort   string
 }
 
+func NewServerInfo(tlsEnabled bool, url, grpcPort, httpPort string) ServerInfo {
+	return ServerInfo{
+		tlsEnabled: tlsEnabled,
+		domain:     url,
+		GRPCPort:   grpcPort,
+		HTTPPort:   httpPort,
+	}
+}
+
 func (s ServerInfo) GetHTTPURL() string {
 	httpPrefix := s.getHTTPPrefix()
 
@@ -61,13 +70,4 @@ func (s ServerInfo) getGRPCCreds() credentials.TransportCredentials {
 	}
 
 	return insecure.NewCredentials()
-}
-
-func NewServerInfo(tlsEnabled bool, url, grpcPort, httpPort string) ServerInfo {
-	return ServerInfo{
-		tlsEnabled: tlsEnabled,
-		domain:     url,
-		GRPCPort:   grpcPort,
-		HTTPPort:   httpPort,
-	}
 }

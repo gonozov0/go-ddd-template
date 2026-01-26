@@ -15,7 +15,7 @@ type ProductHandlers struct {
 func SetupHandlers(productRepo service.ProductRepository, imageStorage service.ImageStorage) ProductHandlers {
 	productService := service.NewProductService(productRepo, imageStorage)
 
-	//nolint:exhaustivestruct
+	//nolint:exhaustruct // partial initialization is intentional
 	return ProductHandlers{
 		productService: productService,
 		imageStorage:   imageStorage,
