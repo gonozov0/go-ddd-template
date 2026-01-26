@@ -96,7 +96,7 @@ func (s *PostgresRepoSuite) TestProductCRUD() {
 	})
 	s.Require().NoError(err)
 
-	for range len(created) {
+	for range created {
 		s.Require().
 			NoError(consumerutils.ReadAndProcessMessageFromSQS(context.Background(), s.productQueueReaders.ProductInited, func(event ProductInitedEvent) error {
 				if !slices.Contains(created.IDs().Strings(), event.ID) {

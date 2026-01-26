@@ -22,7 +22,7 @@ func (s *ProductsSuite) TestCreateProducts() {
 	)
 	grpcutils.CheckCodeWithSuite(s, err, codes.OK)
 
-	s.Require().Equal(2, len(resp.GetIds()))
+	s.Require().Len(resp.GetIds(), 2)
 }
 
 func (s *ProductsSuite) TestCreateProductsWithErrInvalidProductName() {

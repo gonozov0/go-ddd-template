@@ -7,6 +7,7 @@ import (
 
 type UserHandlers struct {
 	protobuf.UnimplementedUserServiceServer
+
 	userService service.UserService
 }
 

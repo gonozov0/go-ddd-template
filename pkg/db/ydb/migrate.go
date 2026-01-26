@@ -15,7 +15,7 @@ import (
 // - 0 means rollback all migrations
 // - 20240919100509 is an example of a specific version to migrate to.
 //
-//nolint:cyclop
+
 func Migrate(ctx context.Context, cfg Config, fs embed.FS, targetVersion *uint) error {
 	db, err := initDB(ctx, cfg)
 	if err != nil {

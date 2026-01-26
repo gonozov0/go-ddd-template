@@ -31,7 +31,7 @@ func (s *ProductsSuite) TestGetProducts() {
 		})
 	}
 
-	s.Require().ElementsMatch(expectedProducts, resp.Items)
+	s.Require().ElementsMatch(expectedProducts, resp.GetItems())
 }
 
 func (s *ProductsSuite) TestGetProductsWithNonExistentId() {

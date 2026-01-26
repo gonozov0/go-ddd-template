@@ -20,7 +20,6 @@ import (
 
 type MessageHandler func(ctx context.Context, data []byte) error
 
-//nolint:cyclop
 func RunYDBConsumer(
 	ctx context.Context,
 	reader *topicreader.Reader,

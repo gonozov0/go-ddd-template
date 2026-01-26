@@ -45,11 +45,11 @@ func (s *HelperSuite) WaitForDeliveryCreation(
 			return err
 		}
 
-		for _, d := range listDeliveriesResp.Deliveries {
+		for _, d := range listDeliveriesResp.GetDeliveries() {
 			if d.GetOrderId() == orderID.String() {
-				deliveryID, err = valueobjects.NewDeliveryIDFromString(d.Id)
+				deliveryID, err = valueobjects.NewDeliveryIDFromString(d.GetId())
 				if err != nil {
-					return fmt.Errorf("failed to parse delivery id %s: %w", d.Id, err)
+					return fmt.Errorf("failed to parse delivery id %s: %w", d.GetId(), err)
 				}
 
 				return nil

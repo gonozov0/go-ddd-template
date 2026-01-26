@@ -238,7 +238,11 @@ func (s *DBRepoSuite) prepare() (valueobjects.UserID, valueobjects.ProductIDs) {
 	s.Require().NoError(err)
 
 	s.T().Cleanup(func() {
-		if err = s.usersRepo.DeleteUser(context.Background(), user.GetID(), func(u *usersdomain.User) error { return nil }); err != nil {
+		if err = s.usersRepo.DeleteUser(
+			context.Background(),
+			user.GetID(),
+			func(u *usersdomain.User) error { return nil },
+		); err != nil {
 			slog.Error("failed to delete user", loggerutils.ErrAttr(err))
 		}
 	})
@@ -253,9 +257,13 @@ func (s *DBRepoSuite) prepare() (valueobjects.UserID, valueobjects.ProductIDs) {
 	}
 
 	s.T().Cleanup(func() {
-		if err = s.productsRepo.DeleteProducts(context.Background(), products.IDs(), func(_ []productsdomain.Product) error {
-			return nil
-		}); err != nil {
+		if err = s.productsRepo.DeleteProducts(
+			context.Background(),
+			products.IDs(),
+			func(_ []productsdomain.Product) error {
+				return nil
+			},
+		); err != nil {
 			slog.Error("failed to delete products", loggerutils.ErrAttr(err))
 		}
 	})

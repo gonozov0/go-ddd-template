@@ -108,7 +108,7 @@ func getHealthCheckHandler(conn *grpc.ClientConn) http.Handler {
 			return
 		}
 
-		if resp.Status != grpc_health_v1.HealthCheckResponse_SERVING {
+		if resp.GetStatus() != grpc_health_v1.HealthCheckResponse_SERVING {
 			http.Error(w, "Service not healthy", http.StatusServiceUnavailable)
 			return
 		}

@@ -3,6 +3,7 @@ package consumerutils
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 
@@ -65,7 +66,7 @@ func ReadAndProcessMessageFromSQS[Event any](
 
 	message := messages[0]
 	if message.Body == nil {
-		return fmt.Errorf("message body is nil")
+		return errors.New("message body is nil")
 	}
 
 	var event Event
@@ -80,7 +81,7 @@ func ReadAndProcessMessageFromSQS[Event any](
 	}
 
 	if message.ReceiptHandle == nil {
-		return fmt.Errorf("message receipt_handle is nil")
+		return errors.New("message receipt_handle is nil")
 	}
 
 	err = reader.DeleteMessage(ctx, *message.ReceiptHandle)

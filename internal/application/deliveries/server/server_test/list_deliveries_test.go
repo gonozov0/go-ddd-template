@@ -19,7 +19,7 @@ func (s *DeliveriesSuite) TestListDeliveries() {
 		grpcutils.CheckCodeWithSuite(s, err, codes.OK)
 
 		s.Require().NotNil(resp)
-		s.Require().Empty(resp.Deliveries)
+		s.Require().Empty(resp.GetDeliveries())
 	})
 	s.Run("successful list with deliveries", func() {
 		deliveries := []domain.Delivery{
@@ -40,6 +40,6 @@ func (s *DeliveriesSuite) TestListDeliveries() {
 			})
 		}
 
-		s.Require().ElementsMatch(expectedDeliveries, resp.Deliveries)
+		s.Require().ElementsMatch(expectedDeliveries, resp.GetDeliveries())
 	})
 }

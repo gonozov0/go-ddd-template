@@ -14,7 +14,7 @@ type ProductsCreater interface {
 	) error
 }
 
-// CreateRandomProducts - создает count случайных продуктов
+// CreateRandomProducts - создает count случайных продуктов.
 func CreateRandomProducts(s testify.Suite, repo ProductsCreater, count int) domain.Products {
 	products := make(domain.Products, 0, count)
 	for range count {

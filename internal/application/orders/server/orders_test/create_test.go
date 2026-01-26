@@ -19,7 +19,7 @@ func (s *OrdersSuite) TestCreateOrder() {
 
 	resp, err := s.GRPCHandlers.CreateOrder(s.UserCtx, req)
 	grpcutils.CheckCodeWithSuite(s, err, codes.OK)
-	s.Require().NotEqual("", resp.GetId())
+	s.Require().NotEmpty(resp.GetId())
 	s.Require().NotEqual(uuid.Nil, resp.GetId())
 }
 

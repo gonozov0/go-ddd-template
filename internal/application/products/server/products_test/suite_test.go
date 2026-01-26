@@ -12,6 +12,7 @@ import (
 type ProductsSuite struct {
 	suite.Suite
 	application.ServerSuite
+
 	GRPCHandlers products.ProductHandlers
 }
 

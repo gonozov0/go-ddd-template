@@ -21,11 +21,11 @@ var (
 	ErrUnauthenticated = status.Errorf(codes.Unauthenticated, ErrMsgUnauthenticated)
 )
 
-// CheckCode проверяет статус код в error и возвращает сообщение
+// CheckCode проверяет статус код в error и возвращает сообщение.
 func CheckCode(err error, code codes.Code) (string, error) {
 	grpcStatus, ok := status.FromError(err)
 	if !ok {
-		return "", fmt.Errorf("Faied to get status code from received error (%s)", err)
+		return "", fmt.Errorf("Faied to get status code from received error (%w)", err)
 	}
 
 	if grpcStatus.Code() != code {

@@ -9,7 +9,7 @@ import (
 	"go-ddd-template/pkg/testify"
 )
 
-// Методы для генерации Product
+// Методы для генерации Product.
 type (
 	productToCreate struct {
 		id     valueobjects.ProductID
@@ -70,7 +70,7 @@ func GenerateProduct(s testify.Suite, opts ...GenerateProductOption) *domain.Pro
 	return domain.NewProduct(product.id, product.name, product.price, product.status)
 }
 
-// Методы для генерации Order
+// Методы для генерации Order.
 type (
 	orderToCreate struct {
 		id       valueobjects.OrderID

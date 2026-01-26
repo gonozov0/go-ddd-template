@@ -71,6 +71,7 @@ func NewTracerProvider(
 
 type tracerProviderWrapper struct {
 	embedded.TracerProvider
+
 	provider trace.TracerProvider
 }
 
@@ -82,6 +83,7 @@ func (p *tracerProviderWrapper) Tracer(name string, options ...trace.TracerOptio
 
 type tracerWrapper struct {
 	embedded.Tracer
+
 	tracer trace.Tracer
 }
 

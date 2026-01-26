@@ -2,6 +2,7 @@ package suites
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
@@ -60,7 +61,7 @@ func (s *runServerSuite) SetupSuite() {
 	}
 
 	freePorts := make([]string, 4)
-	for i := 0; i < len(freePorts); i++ {
+	for i := range freePorts {
 		freePorts[i], err = netutils.GetFreePort()
 		if err != nil {
 			s.FailNow("Failed to get free port", err)
@@ -95,7 +96,7 @@ func (s *runServerSuite) waitToStartServers() {
 			}
 
 			if resp.StatusCode != http.StatusOK {
-				return fmt.Errorf("there is not OK status code")
+				return errors.New("there is not OK status code")
 			}
 
 			if err := resp.Body.Close(); err != nil {
@@ -113,27 +114,19 @@ func (s *runServerSuite) startServer() {
 	s.cfg.Server.GRPCPort = s.serversInfo.PublicServer.GRPCPort
 	s.cfg.Server.PprofPort = ""
 
-	s.wg.Add(1)
-
-	go func() {
-		defer s.wg.Done()
-
+	s.wg.Go(func() {
 		err := internal.RunServers(s.cfg, s.ImageStorage)
 		if err != nil {
 			slog.Error("Failed to run server", loggerutils.ErrAttr(fmt.Errorf("failed to run server: %w", err)))
 			os.Exit(1)
 		}
-	}()
+	})
 }
 
 func (s *runServerSuite) startConsumers() {
 	s.cfg.Consumers.HTTPPort = s.serversInfo.ConsumerServer.HTTPPort
 
-	s.wg.Add(1)
-
-	go func() {
-		defer s.wg.Done()
-
+	s.wg.Go(func() {
 		err := internal.RunConsumers(s.cfg)
 		if err != nil {
 			slog.Error(
@@ -142,23 +135,19 @@ func (s *runServerSuite) startConsumers() {
 			)
 			os.Exit(1)
 		}
-	}()
+	})
 }
 
 func (s *runServerSuite) startCrons() {
 	s.cfg.Crons.HTTPPort = s.serversInfo.CronServer.HTTPPort
 
-	s.wg.Add(1)
-
-	go func() {
-		defer s.wg.Done()
-
+	s.wg.Go(func() {
 		err := internal.RunCrons(s.cfg)
 		if err != nil {
 			slog.Error("Failed to run crons", loggerutils.ErrAttr(fmt.Errorf("failed to run crons: %w", err)))
 			os.Exit(1)
 		}
-	}()
+	})
 }
 
 func (s *runServerSuite) TearDownSuite() {

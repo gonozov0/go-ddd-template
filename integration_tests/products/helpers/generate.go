@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"google.golang.org/grpc/codes"
@@ -107,12 +108,12 @@ func (s *HelperSuite) WaitPublishProductsStatus(productIDs valueobjects.ProductI
 		}
 
 		if resp == nil {
-			return backoff.NewAlwaysRetryableError(fmt.Errorf("reponse should not be nil"))
+			return backoff.NewAlwaysRetryableError(errors.New("reponse should not be nil"))
 		}
 
-		for _, product := range resp.Items {
-			if product.Status != valueobjects.ProductStatusPublished.String() {
-				return backoff.NewAlwaysRetryableError(fmt.Errorf("product %s is not published", product.Id))
+		for _, product := range resp.GetItems() {
+			if product.GetStatus() != valueobjects.ProductStatusPublished.String() {
+				return backoff.NewAlwaysRetryableError(fmt.Errorf("product %s is not published", product.GetId()))
 			}
 		}
 

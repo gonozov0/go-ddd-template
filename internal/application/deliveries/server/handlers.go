@@ -7,6 +7,7 @@ import (
 
 type DeliveryHandlers struct {
 	pb.UnimplementedDeliveryServiceServer
+
 	deliveryService service.DeliveryService
 }
 

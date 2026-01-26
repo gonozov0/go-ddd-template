@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"slices"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -48,11 +49,5 @@ func (ui *UserInfo) IsEmpty() bool {
 }
 
 func (ui *UserInfo) IsAdmin() bool {
-	for _, userRole := range ui.roles {
-		if userRole == Admin {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(ui.roles, Admin)
 }

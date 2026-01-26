@@ -56,7 +56,6 @@ type JSONCtxHandler struct {
 	*slog.JSONHandler
 }
 
-//nolint:cyclop
 func (h *JSONCtxHandler) Handle(ctx context.Context, r slog.Record) error {
 	userInfo := auth.GetUserInfo(ctx)
 	if !userInfo.IsEmpty() {

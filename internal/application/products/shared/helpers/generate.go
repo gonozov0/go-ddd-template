@@ -9,7 +9,7 @@ import (
 	"go-ddd-template/pkg/testify"
 )
 
-// Методы для генерации Product
+// Методы для генерации Product.
 type (
 	productToCreate struct {
 		id            valueobjects.ProductID

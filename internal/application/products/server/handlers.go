@@ -7,6 +7,7 @@ import (
 
 type ProductHandlers struct {
 	protobuf.UnimplementedProductServiceServer
+
 	productService service.ProductService
 	imageStorage   service.ImageStorage
 }

@@ -30,7 +30,6 @@ import (
 	"go-ddd-template/pkg/sqs"
 )
 
-//nolint:cyclop
 func RunServers(cfg Config, imageStorage productsservice.ImageStorage) error {
 	ctx := context.Background()
 
@@ -88,7 +87,16 @@ func RunServers(cfg Config, imageStorage productsservice.ImageStorage) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
-	if err := startServers(ctx, g, cluster, orderQueueWriters, productQueueWriters, redisClient, imageStorage, cfg); err != nil {
+	if err := startServers(
+		ctx,
+		g,
+		cluster,
+		orderQueueWriters,
+		productQueueWriters,
+		redisClient,
+		imageStorage,
+		cfg,
+	); err != nil {
 		return fmt.Errorf("failed to start servers: %w", err)
 	}
 

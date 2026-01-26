@@ -4,16 +4,15 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"os"
 	"time"
 
 	"github.com/redis/go-redis/v9"
-
-	"fmt"
 )
 
 type redisClient interface {
-	Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd
+	Set(ctx context.Context, key string, value any, expiration time.Duration) *redis.StatusCmd
 	Get(ctx context.Context, key string) *redis.StringCmd
 	Del(ctx context.Context, keys ...string) *redis.IntCmd
 	Ping(ctx context.Context) *redis.StatusCmd
@@ -35,11 +34,11 @@ func NewClient(ctx context.Context, config Config) (*Client, error) {
 
 		pem, err := os.ReadFile(config.TlsRootCert)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to read certificate")
+			return nil, errors.New("Failed to read certificate")
 		}
 
 		if ok := rootCertPool.AppendCertsFromPEM(pem); !ok {
-			return nil, fmt.Errorf("Failed to append PEM")
+			return nil, errors.New("Failed to append PEM")
 		}
 
 		tlsConfig = &tls.Config{
@@ -48,7 +47,7 @@ func NewClient(ctx context.Context, config Config) (*Client, error) {
 	}
 
 	if len(config.Addrs) < 1 {
-		return nil, fmt.Errorf("no host found")
+		return nil, errors.New("no host found")
 	}
 
 	client = redis.NewUniversalClient(&redis.UniversalOptions{
@@ -61,7 +60,7 @@ func NewClient(ctx context.Context, config Config) (*Client, error) {
 	return &Client{client: client}, nil
 }
 
-func (c *Client) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
+func (c *Client) Set(ctx context.Context, key string, value any, expiration time.Duration) *redis.StatusCmd {
 	return c.client.Set(ctx, key, value, expiration)
 }
 

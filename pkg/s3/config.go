@@ -1,6 +1,7 @@
 package s3
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -18,19 +19,19 @@ type Config struct {
 
 func (c *Config) validate() error {
 	if c.Endpoint == "" {
-		return fmt.Errorf("s3 endpoint is required")
+		return errors.New("s3 endpoint is required")
 	}
 
 	if c.AccessKeyID == "" {
-		return fmt.Errorf("s3 access key id is required")
+		return errors.New("s3 access key id is required")
 	}
 
 	if c.AccessSecretKey == "" {
-		return fmt.Errorf("s3 secret access key is required")
+		return errors.New("s3 secret access key is required")
 	}
 
 	if c.Region == "" {
-		return fmt.Errorf("s3 region is required")
+		return errors.New("s3 region is required")
 	}
 
 	return nil
@@ -38,7 +39,7 @@ func (c *Config) validate() error {
 
 func (c *Config) validateExternal() error {
 	if c.ExternalEndpoint == "" {
-		return fmt.Errorf("s3 external endpoint is required")
+		return errors.New("s3 external endpoint is required")
 	}
 
 	return c.validate()

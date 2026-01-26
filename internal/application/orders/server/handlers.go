@@ -8,6 +8,7 @@ import (
 
 type OrderHandlers struct {
 	pb.UnimplementedOrderServiceServer
+
 	orderService service.OrderService
 	userService  users.UserService
 }
