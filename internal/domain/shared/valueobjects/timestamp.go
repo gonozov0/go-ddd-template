@@ -11,7 +11,7 @@ func NewTimestamp(t time.Time) Timestamp {
 }
 
 func NewTimestampNow() Timestamp {
-	return Timestamp(NewTimestamp(time.Now().UTC()))
+	return NewTimestamp(time.Now().UTC())
 }
 
 func (t Timestamp) Time() time.Time {

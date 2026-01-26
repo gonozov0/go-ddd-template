@@ -88,7 +88,7 @@ func (d *TimestampDecoder) Decode(ptr unsafe.Pointer, iter *jsoniter.Iterator) {
 	*(**timestamppb.Timestamp)(ptr) = ts
 }
 
-func UnmarshalJSON(data []byte, v interface{}) error {
+func UnmarshalJSON(data []byte, v any) error {
 	jsoniter.RegisterTypeDecoder("uint64", &Uint64FromStringDecoder{})
 	jsoniter.RegisterTypeDecoder("*timestamppb.Timestamp", &TimestampDecoder{})
 
@@ -97,7 +97,7 @@ func UnmarshalJSON(data []byte, v interface{}) error {
 	return json.Unmarshal(data, v)
 }
 
-func MarshalJSON(v interface{}) ([]byte, error) {
+func MarshalJSON(v any) ([]byte, error) {
 	jsoniter.RegisterTypeDecoder("uint64", &Uint64FromStringDecoder{})
 	jsoniter.RegisterTypeDecoder("*timestamppb.Timestamp", &TimestampDecoder{})
 

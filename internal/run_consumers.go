@@ -29,7 +29,6 @@ type ConsumerService interface {
 	Run(ctx context.Context) error
 }
 
-//nolint:cyclop
 func RunConsumers(cfg Config) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()

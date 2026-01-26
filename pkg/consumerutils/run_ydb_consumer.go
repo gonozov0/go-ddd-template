@@ -20,7 +20,6 @@ import (
 
 type MessageHandler func(ctx context.Context, data []byte) error
 
-//nolint:cyclop
 func RunYDBConsumer(
 	ctx context.Context,
 	reader *topicreader.Reader,
@@ -74,11 +73,11 @@ func RunYDBConsumer(
 func contextCancelMiddleware(h MessageHandler) MessageHandler {
 	return func(ctx context.Context, data []byte) error {
 		if ctx.Err() != nil {
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return backoff.Permanent(ctx.Err())
 		}
 
-		//nolint:descriptiveerrors
+		//nolint:wrapcheck // preserve original error for logging
 		return h(context.Background(), data)
 	}
 }

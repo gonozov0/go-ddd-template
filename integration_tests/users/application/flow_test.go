@@ -85,9 +85,9 @@ func (s *UsersSuite) TestHTTP() {
 		s.Require().NoError(err)
 		s.Require().NoError(httpResp.Body.Close())
 
-		s.Require().Equal(user.GetID().String(), resp.Id)
+		s.Require().Equal(user.GetID().String(), resp.GetId())
 
-		userID, err := valueobjects.NewUserIDFromString(resp.Id)
+		userID, err := valueobjects.NewUserIDFromString(resp.GetId())
 		s.Require().NoError(err)
 
 		user, err = userunithelpers.UpdateUserWithID(userID, user)
@@ -123,8 +123,8 @@ func (s *UsersSuite) TestHTTP() {
 		s.Require().NoError(err)
 		s.Require().NoError(httpResp.Body.Close())
 
-		s.Require().Equal(user.GetID().String(), resp.Id)
-		s.Require().Equal(user.GetName().String(), resp.Name)
-		s.Require().Equal(user.GetEmail().String(), resp.Email)
+		s.Require().Equal(user.GetID().String(), resp.GetId())
+		s.Require().Equal(user.GetName().String(), resp.GetName())
+		s.Require().Equal(user.GetEmail().String(), resp.GetEmail())
 	})
 }

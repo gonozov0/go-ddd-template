@@ -7,6 +7,6 @@ type CheckHandlers struct {
 }
 
 func SetupHandlers() CheckHandlers {
-	//nolint:exhaustivestruct
+	//nolint:exhaustruct // partial initialization is intentional
 	return CheckHandlers{}
 }

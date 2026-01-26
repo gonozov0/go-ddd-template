@@ -84,7 +84,7 @@ func (s *ProductsSuite) TestGRPC() {
 			})
 		}
 
-		s.Require().ElementsMatch(expectedProducts, resp.Items)
+		s.Require().ElementsMatch(expectedProducts, resp.GetItems())
 	})
 
 	s.Run("Product Image Upload Flow", func() {
@@ -108,7 +108,7 @@ func (s *ProductsSuite) TestGRPC() {
 		uploadReq, err := http.NewRequest(http.MethodPut, uploadURLResp.GetUploadUrl(), bytes.NewReader(imageContent))
 		s.Require().NoError(err)
 
-		uploadReq.Header.Set("x-amz-acl", imagestorage.ImageBucketACL)
+		uploadReq.Header.Set("X-Amz-Acl", imagestorage.ImageBucketACL)
 
 		uploadResp, err := http.DefaultClient.Do(uploadReq)
 		s.Require().NoError(err)
@@ -240,7 +240,7 @@ func (s *ProductsSuite) TestHTTP() {
 			})
 		}
 
-		s.Require().ElementsMatch(expectedProducts, resp.Items)
+		s.Require().ElementsMatch(expectedProducts, resp.GetItems())
 	})
 
 	s.Run("Product Image Upload Flow", func() {
@@ -280,7 +280,7 @@ func (s *ProductsSuite) TestHTTP() {
 		uploadReq, err := http.NewRequest(http.MethodPut, uploadURLResp.GetUploadUrl(), bytes.NewReader(imageContent))
 		s.Require().NoError(err)
 
-		uploadReq.Header.Set("x-amz-acl", imagestorage.ImageBucketACL)
+		uploadReq.Header.Set("X-Amz-Acl", imagestorage.ImageBucketACL)
 
 		uploadResp, err := http.DefaultClient.Do(uploadReq)
 		s.Require().NoError(err)

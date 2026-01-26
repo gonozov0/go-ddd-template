@@ -7,13 +7,14 @@ import (
 
 type UserHandlers struct {
 	protobuf.UnimplementedUserServiceServer
+
 	userService service.UserService
 }
 
 func SetupHandlers(userRepo service.UserRepository) UserHandlers {
 	userService := service.NewUserService(userRepo)
 
-	//nolint:exhaustivestruct
+	//nolint:exhaustruct // partial initialization is intentional
 	return UserHandlers{
 		userService: userService,
 	}

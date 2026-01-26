@@ -72,7 +72,7 @@ func (r *RedisRepo) GetUser(ctx context.Context, id valueobjects.UserID) (*domai
 		return nil, fmt.Errorf("failed to deserialize user: %w", err)
 	}
 
-	return domain.NewUser(valueobjects.UserID(id), domain.Name(user.Name), valueobjects.Email(user.Email)), nil
+	return domain.NewUser(id, domain.Name(user.Name), valueobjects.Email(user.Email)), nil
 }
 
 func (r *RedisRepo) DeleteUser(ctx context.Context, id valueobjects.UserID) error {

@@ -8,7 +8,6 @@ import (
 	libsqs "go-ddd-template/pkg/sqs"
 )
 
-//nolint:cyclop
 func RunSQSConsumer(
 	ctx context.Context,
 	reader *libsqs.Reader,

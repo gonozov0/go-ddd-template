@@ -1,8 +1,7 @@
 package traces
 
 import (
-	"fmt"
-
+	"errors"
 	"go-ddd-template/pkg/envutils"
 )
 
@@ -23,19 +22,19 @@ type Config struct {
 
 func (c *Config) Validate() error {
 	if c.RequestIDHeader == "" {
-		return fmt.Errorf("traces requires REQUEST_ID_HEADER to be set")
+		return errors.New("traces requires REQUEST_ID_HEADER to be set")
 	}
 
 	if c.TraceRatio < 0 || c.TraceRatio > 1 {
-		return fmt.Errorf("traces requires TRACE_RATIO to be in range [0;1]")
+		return errors.New("traces requires TRACE_RATIO to be in range [0;1]")
 	}
 
 	if c.ExporterType == "" {
-		return fmt.Errorf("traces requires EXPORTER_TYPE to be set")
+		return errors.New("traces requires EXPORTER_TYPE to be set")
 	}
 
 	if c.ExporterType == OtelCollector && c.CollectorEndpoint == "" {
-		return fmt.Errorf("traces requires TRACING_OTLP_GRPC to be set")
+		return errors.New("traces requires TRACING_OTLP_GRPC to be set")
 	}
 
 	return nil

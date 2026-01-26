@@ -1,8 +1,7 @@
 package helpers
 
 import (
-	"fmt"
-
+	"errors"
 	pb "go-ddd-template/generated/server"
 	domain "go-ddd-template/internal/domain/products"
 	"go-ddd-template/internal/domain/shared/valueobjects"
@@ -23,7 +22,7 @@ func ToCreateProductsRequest(products domain.Products) *pb.CreateProductsRequest
 
 func UpdateProductsWithIDs(productIDs valueobjects.ProductIDs, products domain.Products) (domain.Products, error) {
 	if len(productIDs) != len(products) {
-		return nil, fmt.Errorf("length of productIDs and products must be equal")
+		return nil, errors.New("length of productIDs and products must be equal")
 	}
 
 	updatedProducts := make(domain.Products, 0, len(products))

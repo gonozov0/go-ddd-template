@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"strconv"
 	"strings"
@@ -48,7 +49,7 @@ func parseFlags() (Flags, error) {
 
 func parseDBFlag(value string) (DBFlag, error) {
 	if value == "" {
-		return "", fmt.Errorf("database type must be specified with -db flag (postgres|ydb)")
+		return "", errors.New("database type must be specified with -db flag (postgres|ydb)")
 	}
 
 	switch strings.ToLower(value) {

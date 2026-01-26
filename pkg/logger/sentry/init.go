@@ -47,7 +47,7 @@ func Init(cfg Config) error {
 }
 
 // getSentryEnvironment returns sentry environment name for given environment type.
-// available environments: development|testing|prestable|production|pre-production
+// available environments: development|testing|prestable|production|pre-production.
 func getSentryEnvironment(envType environment.Type) string {
 	switch envType {
 	case environment.Production:
@@ -56,6 +56,8 @@ func getSentryEnvironment(envType environment.Type) string {
 		return "testing"
 	case environment.Dev:
 		return "development"
+	case environment.Local:
+		return "local"
 	default:
 		return ""
 	}

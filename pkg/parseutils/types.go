@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	gofrs "github.com/gofrs/uuid"
+	gofrs "github.com/gofrs/uuid/v5"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -70,7 +70,7 @@ func JsonToGRPCStruct(jsonData json.RawMessage) (*structpb.Struct, error) {
 }
 
 func GRPCListToStrings(rpcData *structpb.ListValue) ([]string, error) {
-	result := make([]string, 0, len(rpcData.Values))
+	result := make([]string, 0, len(rpcData.GetValues()))
 
 	for _, value := range rpcData.GetValues() {
 		result = append(result, value.GetStringValue())

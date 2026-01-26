@@ -30,7 +30,6 @@ func NewAuthMiddleware(cfg Config) (grpc.UnaryServerInterceptor, error) {
 	return mw.UnaryInterceptor, nil
 }
 
-//nolint:cyclop
 func (mw *authMiddleware) auth(_ *grpc.UnaryServerInfo, md metadata.MD) (UserInfo, error) {
 	rawUserID, err := grpcutils.GetSingleHeader(md, mw.cfg.UserHeader)
 	if err != nil || rawUserID == "" {

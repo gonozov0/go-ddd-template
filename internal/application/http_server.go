@@ -4,6 +4,8 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	loggerutils "go-ddd-template/pkg/logger/utils"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -82,7 +84,12 @@ func getSwaggerHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/swagger.json" {
 			w.Header().Set("Content-Type", "application/json")
-			w.Write(generated.SwaggerJSON)
+
+			_, err := w.Write(generated.SwaggerJSON)
+			if err != nil {
+				slog.Error("failed to write swagger json", loggerutils.ErrAttr(err))
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 
 			return
 		}
@@ -108,7 +115,7 @@ func getHealthCheckHandler(conn *grpc.ClientConn) http.Handler {
 			return
 		}
 
-		if resp.Status != grpc_health_v1.HealthCheckResponse_SERVING {
+		if resp.GetStatus() != grpc_health_v1.HealthCheckResponse_SERVING {
 			http.Error(w, "Service not healthy", http.StatusServiceUnavailable)
 			return
 		}

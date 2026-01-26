@@ -8,6 +8,7 @@ import (
 
 type OrderHandlers struct {
 	pb.UnimplementedOrderServiceServer
+
 	orderService service.OrderService
 	userService  users.UserService
 }
@@ -16,7 +17,7 @@ func SetupHandlers(or service.OrderRepository, ur users.UserRepository) OrderHan
 	userService := users.NewUserService(ur)
 	orderService := service.NewOrderService(or, userService)
 
-	//nolint:exhaustivestruct
+	//nolint:exhaustruct // partial initialization is intentional
 	return OrderHandlers{
 		orderService: orderService,
 		userService:  userService,

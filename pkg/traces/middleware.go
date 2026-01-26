@@ -2,6 +2,7 @@ package traces
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -48,7 +49,7 @@ func NewTraceMiddleware(cfg Config) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp any, err error) {
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
-			return nil, fmt.Errorf("missing metadata in request")
+			return nil, errors.New("missing metadata in request")
 		}
 
 		if isTraceRequired(info.FullMethod) {
@@ -86,10 +87,10 @@ func NewTraceMiddleware(cfg Config) grpc.UnaryServerInterceptor {
 				span.SetStatus(codes.Ok, "")
 			}
 
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return resp, err
 		} else {
-			//nolint:descriptiveerrors
+			//nolint:wrapcheck // preserve original error for logging
 			return handler(ctx, req)
 		}
 	}

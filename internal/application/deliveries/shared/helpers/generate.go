@@ -11,7 +11,7 @@ import (
 	"go-ddd-template/pkg/testify"
 )
 
-// Методы для генерации Delivery
+// Методы для генерации Delivery.
 type (
 	deliveryToCreate struct {
 		id        valueobjects.DeliveryID
@@ -65,7 +65,7 @@ func GenerateDelivery(s testify.Suite, opts ...GenerateDeliveryOption) *domain.D
 	return domain.NewDelivery(delivery.id, delivery.orderID, delivery.createdAt)
 }
 
-// Методы для генерации события orderCreated
+// Методы для генерации события orderCreated.
 type (
 	orderCreatedEventToCreate struct {
 		OrderID uuid.UUID `json:"order_id"`

@@ -30,7 +30,7 @@ func (s *DeliveriesSuite) TestDeleteDelivery() {
 
 		deliveries, err := s.DeliveriesRepo.ListDeliveries(context.Background())
 		s.Require().NoError(err)
-		s.Require().Len(deliveries, 0, "delivery should be deleted but still exists")
+		s.Require().Empty(deliveries, "delivery should be deleted but still exists")
 	})
 	s.Run("Successfully deleted non-existing delivery", func() {
 		randomID := uuid.New()

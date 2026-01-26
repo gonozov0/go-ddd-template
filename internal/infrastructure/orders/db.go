@@ -10,7 +10,7 @@ import (
 
 	"github.com/lib/pq"
 
-	gofrsuuid "github.com/gofrs/uuid"
+	gofrsuuid "github.com/gofrs/uuid/v5"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/ydb-platform/ydb-go-sdk/v3/topic/topicwriter"
@@ -147,7 +147,7 @@ func (r *DBRepo) createOrderDB(ctx context.Context, tx *sqlx.Tx, order *domain.O
 	return nil
 }
 
-// updateProducts может обновить только те поля, которые регулируются доменом Order
+// updateProducts может обновить только те поля, которые регулируются доменом Order.
 func (r *DBRepo) updateProducts(ctx context.Context, tx *sqlx.Tx, products []domain.Product) (err error) {
 	ctx, span := traces.CreateSpan(
 		ctx,

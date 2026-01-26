@@ -14,6 +14,6 @@ func (s *UsersSuite) TestCreateUser() {
 		resp, err := s.GRPCHandlers.CreateUser(s.AdminCtx, userunithelpers.ToCreateUserRequest(user))
 		grpcutils.CheckCodeWithSuite(s, err, codes.OK)
 
-		s.Require().Equal(user.GetID().String(), resp.Id)
+		s.Require().Equal(user.GetID().String(), resp.GetId())
 	})
 }

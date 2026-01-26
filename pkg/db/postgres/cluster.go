@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -47,7 +48,7 @@ func initCluster(ctx context.Context, connData Config) (*hasql.Cluster, error) {
 
 func initNodes(cfg Config) ([]hasql.Node, error) {
 	if len(cfg.Hosts) == 0 {
-		return nil, fmt.Errorf("no host found")
+		return nil, errors.New("no host found")
 	}
 
 	nodes := make([]hasql.Node, 0, len(cfg.Hosts))

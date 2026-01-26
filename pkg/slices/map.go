@@ -1,6 +1,6 @@
 package slices
 
-// Map applies given function to every value of slice
+// Map applies given function to every value of slice.
 func Map[S ~[]T, T, M any](s S, fn func(T) M) []M {
 	if s == nil {
 		return []M(nil)

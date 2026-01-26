@@ -9,7 +9,7 @@ import (
 	"go-ddd-template/pkg/testify"
 )
 
-// Методы для генерации User
+// Методы для генерации User.
 type (
 	userToCreate struct {
 		id    valueobjects.UserID
